@@ -12,6 +12,10 @@ namespace RenkYolu.Player
         [SerializeField] private float moveDuration = 0.25f;
         [SerializeField] private float zPosition = 0f;
 
+        [Header("Animation Settings")]
+        [SerializeField] private float squashAmount = 0.15f;
+        [SerializeField] private float stretchAmount = 0.12f;
+
         private bool isMoving;
 
         public bool IsMoving => isMoving;
@@ -58,13 +62,46 @@ namespace RenkYolu.Player
             Vector3 targetPosition = tile.transform.position;
             targetPosition.z = zPosition;
 
-            Tween moveTween = transform.DOMove(
-                targetPosition,
-                moveDuration
-            )
-            .SetEase(Ease.OutQuad);
+            Vector3 originalScale = transform.localScale;
 
-            yield return moveTween.WaitForCompletion();
+            Vector3 squashScale = new Vector3(
+                originalScale.x + stretchAmount,
+                originalScale.y - squashAmount,
+                originalScale.z
+            );
+
+            Vector3 stretchScale = new Vector3(
+                originalScale.x - squashAmount,
+                originalScale.y + stretchAmount,
+                originalScale.z
+            );
+
+            Sequence movementSequence = DOTween.Sequence();
+
+            movementSequence.Append(
+                transform.DOScale(squashScale, moveDuration * 0.2f)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            movementSequence.Append(
+                transform.DOMove(targetPosition, moveDuration)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            movementSequence.Join(
+                transform.DOScale(stretchScale, moveDuration * 0.5f)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            movementSequence.Append(
+                transform.DOScale(originalScale, moveDuration * 0.25f)
+                    .SetEase(Ease.OutBack)
+            );
+
+            yield return movementSequence.WaitForCompletion();
+
+            transform.position = targetPosition;
+            transform.localScale = originalScale;
 
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y}");
         }
