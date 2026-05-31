@@ -119,6 +119,25 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &133372937 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2399921283368466731, guid: 61d7d4db0e612457aa85d47fd854456d, type: 3}
+  m_PrefabInstance: {fileID: 9201995368563299370}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &133372941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133372937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 103730c501523423a82879780d34bc8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Player.PlayerMovement
+  moveDuration: 0.35
+  zPosition: 0
 --- !u!1 &404984278
 GameObject:
   m_ObjectHideFlags: 0
@@ -1081,6 +1100,7 @@ MonoBehaviour:
   gameFlowUI: {fileID: 1996963244}
   pathLineRenderer: {fileID: 2018657680}
   pathLineZPosition: -1
+  playerMovement: {fileID: 133372941}
 --- !u!4 &1780222545
 Transform:
   m_ObjectHideFlags: 0
@@ -1349,7 +1369,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2399921283368466731, guid: 61d7d4db0e612457aa85d47fd854456d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 133372941}
   m_SourcePrefab: {fileID: 100100000, guid: 61d7d4db0e612457aa85d47fd854456d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

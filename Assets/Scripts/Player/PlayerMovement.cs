@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using RenkYolu.Grid;
 using UnityEngine;
+using DG.Tweening;
 
 namespace RenkYolu.Player
 {
@@ -54,24 +55,16 @@ namespace RenkYolu.Player
 
         private IEnumerator MoveToTile(Tile tile)
         {
-            Vector3 startPosition = transform.position;
-
             Vector3 targetPosition = tile.transform.position;
             targetPosition.z = zPosition;
 
-            float elapsedTime = 0f;
+            Tween moveTween = transform.DOMove(
+                targetPosition,
+                moveDuration
+            )
+            .SetEase(Ease.OutQuad);
 
-            while (elapsedTime < moveDuration)
-            {
-                elapsedTime += Time.deltaTime;
-
-                float progress = elapsedTime / moveDuration;
-                transform.position = Vector3.Lerp(startPosition, targetPosition, progress);
-
-                yield return null;
-            }
-
-            transform.position = targetPosition;
+            yield return moveTween.WaitForCompletion();
 
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y}");
         }
