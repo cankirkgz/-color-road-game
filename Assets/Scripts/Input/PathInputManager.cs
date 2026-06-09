@@ -349,6 +349,12 @@ namespace RenkYolu.InputSystem
 
             if (playerMovement != null)
             {
+                playerMovement.OnTileReached -= HandlePlayerReachedTile;
+                playerMovement.OnTileReached += HandlePlayerReachedTile;
+
+                playerMovement.OnMovementFinished -= HandlePlayerMovementFinished;
+                playerMovement.OnMovementFinished += HandlePlayerMovementFinished;
+
                 playerMovement.StartMovement(selectedPath);
             }
             else
@@ -359,5 +365,63 @@ namespace RenkYolu.InputSystem
             Debug.Log($"Path Confirmed | Tile Count: {selectedPath.Count}");
         }
 
+        private void ClearPathLine()
+        {
+            if (pathLineRenderer == null)
+            {
+                return;
+            }
+
+            pathLineRenderer.positionCount = 0;
+        }
+
+        private void HandlePlayerReachedTile(Tile reachedTile)
+        {
+            int reachedIndex = selectedPath.IndexOf(reachedTile);
+
+            if (reachedIndex < 0)
+            {
+                return;
+            }
+
+            UpdateRemainingPathLine(reachedIndex + 1);
+        }
+
+        private void HandlePlayerMovementFinished()
+        {
+            ClearPathLine();
+
+            if (playerMovement != null)
+            {
+                playerMovement.OnTileReached -= HandlePlayerReachedTile;
+                playerMovement.OnMovementFinished -= HandlePlayerMovementFinished;
+            }
+        }
+
+        private void UpdateRemainingPathLine(int startIndex)
+        {
+            if (pathLineRenderer == null)
+            {
+                return;
+            }
+
+            int remainingCount = selectedPath.Count - startIndex;
+
+            if (remainingCount <= 1)
+            {
+                pathLineRenderer.positionCount = 0;
+                return;
+            }
+
+            pathLineRenderer.positionCount = remainingCount;
+
+            for (int i = 0; i < remainingCount; i++)
+            {
+                Vector3 tilePosition = selectedPath[startIndex + i].transform.position;
+                tilePosition.z = pathLineZPosition;
+
+                pathLineRenderer.SetPosition(i, tilePosition);
+            }
+        }
     }
 }

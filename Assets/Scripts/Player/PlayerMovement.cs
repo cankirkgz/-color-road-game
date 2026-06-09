@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using RenkYolu.Grid;
 using UnityEngine;
 using DG.Tweening;
+using RenkYolu.Managers;
 
 namespace RenkYolu.Player
 {
@@ -16,6 +18,8 @@ namespace RenkYolu.Player
         [SerializeField] private float squashAmount = 0.15f;
         [SerializeField] private float stretchAmount = 0.12f;
 
+        public event Action<Tile> OnTileReached;
+        public event Action OnMovementFinished;
         private bool isMoving;
 
         public bool IsMoving => isMoving;
@@ -53,6 +57,17 @@ namespace RenkYolu.Player
             }
 
             isMoving = false;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.ChangeState(RenkYolu.Core.GameState.LevelComplete);
+            }
+            else
+            {
+                Debug.LogError("GameManager is missing. Cannot change state after movement.");
+            }
+
+            OnMovementFinished?.Invoke();
 
             Debug.Log("Player movement finished.");
         }
@@ -102,6 +117,11 @@ namespace RenkYolu.Player
 
             transform.position = targetPosition;
             transform.localScale = originalScale;
+
+            tile.Deselect();
+            tile.Reveal();
+
+            OnTileReached?.Invoke(tile);
 
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y}");
         }

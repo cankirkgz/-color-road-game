@@ -136,8 +136,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103730c501523423a82879780d34bc8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Player.PlayerMovement
-  moveDuration: 0.35
+  moveDuration: 0.25
   zPosition: 0
+  squashAmount: 0.12
+  stretchAmount: 0.12
 --- !u!1 &404984278
 GameObject:
   m_ObjectHideFlags: 0
