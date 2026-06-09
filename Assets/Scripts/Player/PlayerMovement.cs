@@ -37,6 +37,15 @@ namespace RenkYolu.Player
                 return;
             }
 
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.ResetScore();
+            }
+            else
+            {
+                Debug.LogWarning("ScoreManager is missing. Score will not be reset.");
+            }
+
             StartCoroutine(MoveThroughPath(path));
         }
 
@@ -121,9 +130,18 @@ namespace RenkYolu.Player
             tile.Deselect();
             tile.Reveal();
 
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.ApplyOperationFromTile(tile);
+            }
+            else
+            {
+                Debug.LogWarning("ScoreManager is missing. Tile operation cannot be applied.");
+            }
+
             OnTileReached?.Invoke(tile);
 
-            Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y}");
+            Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y} | Current Score: {ScoreManager.Instance?.CurrentScore}");
         }
     }
 }

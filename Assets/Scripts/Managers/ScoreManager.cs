@@ -24,6 +24,35 @@ namespace RenkYolu.Managers
             Instance = this;
         }
 
+        public void ResetScore()
+        {
+            currentScore = 0;
+            Debug.Log("Score Reset | Current Score: 0");
+        }
+
+        public void ApplyOperationFromTile(Tile tile)
+        {
+            if (tile == null)
+            {
+                Debug.LogWarning("Score operation skipped. Tile is null.");
+                return;
+            }
+
+            int oldScore = currentScore;
+
+            currentScore = TileOperationCalculator.ApplyOperation(
+                currentScore,
+                tile.OperationType,
+                tile.OperationValue
+            );
+
+            Debug.Log(
+                $"Score Updated | Tile ID: {tile.TileId} | " +
+                $"Operation: {tile.OperationType} {tile.OperationValue} | " +
+                $"{oldScore} -> {currentScore}"
+            );
+        }
+
         public void CalculateScoreFromPath(List<Tile> path)
         {
             ResetScore();
@@ -36,34 +65,10 @@ namespace RenkYolu.Managers
 
             for (int i = 0; i < path.Count; i++)
             {
-                ApplyTile(path[i]);
+                ApplyOperationFromTile(path[i]);
             }
 
             Debug.Log($"Final Score Calculated | Score: {currentScore}");
-        }
-
-        private void ApplyTile(Tile tile)
-        {
-            if (tile == null)
-            {
-                return;
-            }
-
-            int oldScore = currentScore;
-
-            currentScore = TileOperationCalculator.ApplyOperation(
-                currentScore,
-                tile.OperationType,
-                tile.OperationValue
-            );
-
-            Debug.Log($"Score Step {tile.TileId} | Tile: {tile.OperationType} {tile.OperationValue} | {oldScore} -> {currentScore}");
-        }
-
-        public void ResetScore()
-        {
-            currentScore = 0;
-            Debug.Log("Score Reset | Current Score: 0");
         }
     }
 }
