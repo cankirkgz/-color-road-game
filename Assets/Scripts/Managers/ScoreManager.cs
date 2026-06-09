@@ -47,9 +47,12 @@ namespace RenkYolu.Managers
             );
 
             Debug.Log(
-                $"Score Updated | Tile ID: {tile.TileId} | " +
-                $"Operation: {tile.OperationType} {tile.OperationValue} | " +
-                $"{oldScore} -> {currentScore}"
+                $"Score Updated | " +
+                $"Tile ID: {tile.TileId} | " +
+                $"Color: {tile.ColorType} | " +
+                $"Operation: {tile.OperationType} | " +
+                $"Value: {tile.OperationValue} | " +
+                $"Score: {oldScore} -> {currentScore}"
             );
         }
 
