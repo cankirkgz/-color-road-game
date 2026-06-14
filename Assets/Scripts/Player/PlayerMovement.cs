@@ -5,6 +5,7 @@ using RenkYolu.Grid;
 using UnityEngine;
 using DG.Tweening;
 using RenkYolu.Managers;
+using RenkYolu.UI;
 
 namespace RenkYolu.Player
 {
@@ -137,6 +138,15 @@ namespace RenkYolu.Player
             else
             {
                 Debug.LogWarning("ScoreManager is missing. Tile operation cannot be applied.");
+            }
+
+            if (FloatingTextSpawner.Instance != null)
+            {
+                FloatingTextSpawner.Instance.ShowTileOperation(tile);
+            }
+            else
+            {
+                Debug.LogWarning("FloatingTextSpawner is missing. Floating text cannot be shown.");
             }
 
             OnTileReached?.Invoke(tile);
