@@ -31,7 +31,9 @@ namespace RenkYolu.Player
                 gridManager.HasGenerated &&
                 gridManager.GetStartTile() != null);
 
-            SpawnAtTile(gridManager.GetStartTile());
+            Tile startTile = gridManager.GetStartTile();
+
+            SpawnAtTile(startTile);
         }
 
         private void SpawnAtTile(Tile tile)

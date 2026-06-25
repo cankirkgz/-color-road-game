@@ -12,6 +12,9 @@ namespace RenkYolu.Grid
 
         [Header("Tile Settings")]
         [SerializeField] private Tile tilePrefab;
+        [Header("Start Tile Settings")]
+        [SerializeField] private int startTileX = 0;
+        [SerializeField] private int startTileY = 0;
 
         [Header("Random Operation Chances")]
         [SerializeField] private int positiveChance = 65;
@@ -20,15 +23,22 @@ namespace RenkYolu.Grid
 
         private Tile[,] tiles;
         private float calculatedTileSize;
+        private Tile startTile;
 
         public int Width => width;
         public int Height => height;
         public float TileSize => calculatedTileSize;
         public bool HasGenerated => tiles != null;
+        public Tile StartTile => startTile;
 
         public Tile GetStartTile()
         {
-            return GetTileAt(0, 0);
+            if (startTile != null)
+            {
+                return startTile;
+            }
+
+            return GetTileAt(startTileX, startTileY);
         }
 
         private void Start()
@@ -151,6 +161,7 @@ namespace RenkYolu.Grid
             }
 
             SetTileNeighbours();
+            SetStartTile();
 
             Debug.Log($"Grid Generated | Width: {width}, Height: {height}, Tile Size: {calculatedTileSize}, Total Tiles: {width * height}");
         }
@@ -271,6 +282,24 @@ namespace RenkYolu.Grid
             }
 
             Debug.Log("Tile Neighbours Set");
+        }
+
+        private void SetStartTile()
+        {
+            startTile = GetTileAt(startTileX, startTileY);
+
+            if (startTile == null)
+            {
+                Debug.LogError($"Start Tile could not be set! X: {startTileX}, Y: {startTileY}");
+                return;
+            }
+
+            Debug.Log(
+                $"Start Tile Set | " +
+                $"Tile ID: {startTile.TileId} | " +
+                $"X: {startTile.X}, Y: {startTile.Y} | " +
+                $"Color: {startTile.ColorType}"
+            );
         }
     }
 }

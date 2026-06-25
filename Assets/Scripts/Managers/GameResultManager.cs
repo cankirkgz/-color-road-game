@@ -46,17 +46,30 @@ namespace RenkYolu.Managers
                 return;
             }
 
+            if (ScoreManager.Instance == null)
+            {
+                Debug.LogWarning("ScoreManager is missing. Start color cannot be read.");
+                return;
+            }
+
+            if (!ScoreManager.Instance.HasStartColor)
+            {
+                Debug.LogWarning("Result evaluation started, but start color is not set.");
+                return;
+            }
+
             if (logResultDetails)
             {
                 Debug.Log(
                     $"Result Evaluation Started | " +
+                    $"Start Color: {ScoreManager.Instance.StartColor} | " +
                     $"Finish Tile ID: {finishTile.TileId} | " +
                     $"Finish Color: {finishTile.ColorType} | " +
-                    $"Current Score: {ScoreManager.Instance?.CurrentScore}"
+                    $"Current Score: {ScoreManager.Instance.CurrentScore}"
                 );
             }
 
-            Debug.Log("Result phase is ready. Success / Fail check will be added later.");
+            Debug.Log("Start color is known. Finish color check will be added on Day 3.");
         }
     }
 }
