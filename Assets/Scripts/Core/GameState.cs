@@ -8,6 +8,7 @@ namespace RenkYolu.Core
         Hidden,
         Drawing,
         Walking,
+        Result,
         LevelComplete,
         LevelFailed
     }

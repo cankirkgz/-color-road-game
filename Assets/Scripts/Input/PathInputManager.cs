@@ -116,17 +116,6 @@ namespace RenkYolu.InputSystem
                 return;
             }
 
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.CalculateScoreFromPath(selectedPath);
-            }
-            else
-            {
-                Debug.LogError("ScoreManager is missing in the scene!");
-            }
-
-            //GameManager.Instance.ChangeState(RenkYolu.Core.GameState.Walking);
-
             Debug.Log($"Path Finished | Tile Count: {selectedPath.Count}");
         }
 

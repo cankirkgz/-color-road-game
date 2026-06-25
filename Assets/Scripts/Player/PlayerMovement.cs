@@ -68,13 +68,15 @@ namespace RenkYolu.Player
 
             isMoving = false;
 
-            if (GameManager.Instance != null)
+            Tile finishTile = GetLastValidTile(path);
+
+            if (GameResultManager.Instance != null)
             {
-                GameManager.Instance.ChangeState(RenkYolu.Core.GameState.LevelComplete);
+                GameResultManager.Instance.EvaluateResult(finishTile);
             }
             else
             {
-                Debug.LogError("GameManager is missing. Cannot change state after movement.");
+                Debug.LogError("GameResultManager is missing. Cannot evaluate result after movement.");
             }
 
             OnMovementFinished?.Invoke();
@@ -184,10 +186,29 @@ namespace RenkYolu.Player
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y} | Current Score: {ScoreManager.Instance?.CurrentScore}");
         }
 
+        private Tile GetLastValidTile(IReadOnlyList<Tile> path)
+        {
+            if (path == null || path.Count == 0)
+            {
+                return null;
+            }
+
+            for (int i = path.Count - 1; i >= 0; i--)
+            {
+                if (path[i] != null)
+                {
+                    return path[i];
+                }
+            }
+
+            return null;
+        }
+        
         private bool IsCriticalOperation(TileOperationType operationType)
         {
             return operationType == TileOperationType.MultiplyTwo ||
                 operationType == TileOperationType.MultiplyThree;
         }
+
     }
 }
