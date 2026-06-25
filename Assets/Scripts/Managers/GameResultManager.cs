@@ -95,12 +95,30 @@ namespace RenkYolu.Managers
 
             GameManager.Instance.ChangeState(GameState.LevelComplete);
 
+            int finalScore = ScoreManager.Instance != null
+                ? ScoreManager.Instance.CurrentScore
+                : 0;
+
+            int bonusScore = 0;
+            int totalScore = finalScore + bonusScore;
+
             Debug.Log(
                 $"SUCCESS | " +
                 $"Start Color: {startColor} | " +
                 $"Finish Color: {finishColor} | " +
-                $"Final Score: {ScoreManager.Instance?.CurrentScore}"
+                $"Final Score: {finalScore} | " +
+                $"Bonus: {bonusScore} | " +
+                $"Total: {totalScore}"
             );
+
+            if (SuccessPopupUI.Instance != null)
+            {
+                SuccessPopupUI.Instance.ShowSuccess(finalScore, bonusScore, totalScore);
+            }
+            else
+            {
+                Debug.LogWarning("SuccessPopupUI is missing. Success popup cannot be shown.");
+            }
         }
 
         private void HandleFail(TileColorType startColor, TileColorType finishColor)

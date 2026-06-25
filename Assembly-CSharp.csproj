@@ -58,6 +58,7 @@
     <Compile Include="Assets/Scripts/Grid/Data/TileOperationData.cs" />
     <Compile Include="Assets/Scripts/Core/GameState.cs" />
     <Compile Include="Assets/Scripts/Grid/Data/TileData.cs" />
+    <Compile Include="Assets/Scripts/UI/SuccessPopupUI.cs" />
     <Compile Include="Assets/Scripts/Player/PlayerMovement.cs" />
     <Compile Include="Assets/Scripts/Managers/GameplayFXManager.cs" />
     <Compile Include="Assets/Scripts/Grid/TileOperationCalculator.cs" />
