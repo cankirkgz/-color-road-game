@@ -332,10 +332,16 @@ namespace RenkYolu.Grid
                 return;
             }
 
-            Color baseColor = spriteRenderer.color;
-            Color glowColor = Color.white;
+            if (colorAnimationCoroutine != null)
+            {
+                StopCoroutine(colorAnimationCoroutine);
+                colorAnimationCoroutine = null;
+            }
 
             spriteRenderer.DOKill();
+
+            Color baseColor = GetCurrentTargetColor();
+            Color glowColor = Color.white;
 
             Sequence glowSequence = DOTween.Sequence();
 
@@ -348,6 +354,27 @@ namespace RenkYolu.Grid
                 spriteRenderer.DOColor(baseColor, 0.18f)
                     .SetEase(Ease.InQuad)
             );
+
+            glowSequence.OnComplete(() =>
+            {
+                spriteRenderer.color = baseColor;
+                originalColor = baseColor;
+            });
+        }
+
+        private Color GetCurrentTargetColor()
+        {
+            if (tileData == null)
+            {
+                return Color.white;
+            }
+
+            if (tileData.isVisible)
+            {
+                return GetTileColor();
+            }
+
+            return Color.gray;
         }
     }
 }

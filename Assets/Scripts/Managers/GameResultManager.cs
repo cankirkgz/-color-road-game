@@ -12,8 +12,10 @@ namespace RenkYolu.Managers
         [SerializeField] private bool logResultDetails = true;
 
         private Tile lastFinishTile;
+        private bool lastResultWasSuccess;
 
         public Tile LastFinishTile => lastFinishTile;
+        public bool LastResultWasSuccess => lastResultWasSuccess;
 
         private void Awake()
         {
@@ -29,47 +31,98 @@ namespace RenkYolu.Managers
         public void EvaluateResult(Tile finishTile)
         {
             lastFinishTile = finishTile;
+            lastResultWasSuccess = false;
 
-            if (GameManager.Instance != null)
+            if (GameManager.Instance == null)
             {
-                GameManager.Instance.ChangeState(GameState.Result);
-            }
-            else
-            {
-                Debug.LogError("GameManager is missing. Cannot enter Result state.");
+                Debug.LogError("GameManager is missing. Cannot evaluate result.");
                 return;
             }
 
+            GameManager.Instance.ChangeState(GameState.Result);
+
             if (finishTile == null)
             {
-                Debug.LogWarning("Result evaluation started, but finish tile is null.");
+                Debug.LogWarning("Result evaluation failed. Finish tile is null.");
+                HandleFail("Finish tile is null.");
                 return;
             }
 
             if (ScoreManager.Instance == null)
             {
-                Debug.LogWarning("ScoreManager is missing. Start color cannot be read.");
+                Debug.LogWarning("Result evaluation failed. ScoreManager is missing.");
+                HandleFail("ScoreManager is missing.");
                 return;
             }
 
             if (!ScoreManager.Instance.HasStartColor)
             {
-                Debug.LogWarning("Result evaluation started, but start color is not set.");
+                Debug.LogWarning("Result evaluation failed. Start color is not set.");
+                HandleFail("Start color is not set.");
                 return;
             }
+
+            TileColorType startColor = ScoreManager.Instance.StartColor;
+            TileColorType finishColor = finishTile.ColorType;
+
+            bool isSuccess = finishColor == startColor;
 
             if (logResultDetails)
             {
                 Debug.Log(
                     $"Result Evaluation Started | " +
-                    $"Start Color: {ScoreManager.Instance.StartColor} | " +
+                    $"Start Color: {startColor} | " +
                     $"Finish Tile ID: {finishTile.TileId} | " +
-                    $"Finish Color: {finishTile.ColorType} | " +
+                    $"Finish Color: {finishColor} | " +
                     $"Current Score: {ScoreManager.Instance.CurrentScore}"
                 );
             }
 
-            Debug.Log("Start color is known. Finish color check will be added on Day 3.");
+            if (isSuccess)
+            {
+                HandleSuccess(startColor, finishColor);
+            }
+            else
+            {
+                HandleFail(startColor, finishColor);
+            }
+        }
+
+        private void HandleSuccess(TileColorType startColor, TileColorType finishColor)
+        {
+            lastResultWasSuccess = true;
+
+            GameManager.Instance.ChangeState(GameState.LevelComplete);
+
+            Debug.Log(
+                $"SUCCESS | " +
+                $"Start Color: {startColor} | " +
+                $"Finish Color: {finishColor} | " +
+                $"Final Score: {ScoreManager.Instance?.CurrentScore}"
+            );
+        }
+
+        private void HandleFail(TileColorType startColor, TileColorType finishColor)
+        {
+            lastResultWasSuccess = false;
+
+            GameManager.Instance.ChangeState(GameState.LevelFailed);
+
+            Debug.Log(
+                $"FAIL | Wrong Finish Color | " +
+                $"Start Color: {startColor} | " +
+                $"Finish Color: {finishColor} | " +
+                $"Final Score: {ScoreManager.Instance?.CurrentScore}"
+            );
+        }
+
+        private void HandleFail(string reason)
+        {
+            lastResultWasSuccess = false;
+
+            GameManager.Instance.ChangeState(GameState.LevelFailed);
+
+            Debug.Log($"FAIL | Reason: {reason}");
         }
     }
 }

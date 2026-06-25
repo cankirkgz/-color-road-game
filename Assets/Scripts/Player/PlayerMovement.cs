@@ -157,10 +157,10 @@ namespace RenkYolu.Player
                     FloatingTextSpawner.Instance.ShowColorBonus(tile, 2);
                 }
 
-                if (bonusApplied && GameplayFXManager.Instance != null)
+                /*if (bonusApplied && GameplayFXManager.Instance != null)
                 {
                     GameplayFXManager.Instance.PlayBonusFx(tile, transform);
-                }
+                }*/
 
                 if (IsCriticalOperation(tile.OperationType) && GameplayFXManager.Instance != null)
                 {
@@ -203,7 +203,7 @@ namespace RenkYolu.Player
 
             return null;
         }
-        
+
         private bool IsCriticalOperation(TileOperationType operationType)
         {
             return operationType == TileOperationType.MultiplyTwo ||
