@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 using RenkYolu.Grid;
 using RenkYolu.UI;
 
@@ -27,7 +28,7 @@ namespace RenkYolu.Managers
 
             Instance = this;
 
-            DontDestroyOnLoad(gameObject);
+            // DontDestroyOnLoad(gameObject);
 
             Debug.Log("Game Manager Initialized");
         }
@@ -90,6 +91,17 @@ namespace RenkYolu.Managers
             currentState = newState;
 
             Debug.Log($"STATE CHANGED -> {newState}");
+        }
+
+        public void RestartCurrentLevel()
+        {
+            Time.timeScale = 1f;
+
+            string currentSceneName = SceneManager.GetActiveScene().name;
+
+            Debug.Log($"Restarting Level | Scene: {currentSceneName}");
+
+            SceneManager.LoadScene(currentSceneName);
         }
     }
 }

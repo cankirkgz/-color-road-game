@@ -1,4 +1,5 @@
 using DG.Tweening;
+using RenkYolu.Managers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -153,7 +154,16 @@ namespace RenkYolu.UI
 
         private void HandleReplayButtonClicked()
         {
-            Debug.Log("Replay button clicked. Replay system will be added on Day 6.");
+            Debug.Log("Replay button clicked.");
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RestartCurrentLevel();
+            }
+            else
+            {
+                Debug.LogError("GameManager is missing. Cannot restart level.");
+            }
         }
     }
 }
