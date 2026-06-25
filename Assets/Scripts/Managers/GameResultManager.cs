@@ -1,6 +1,7 @@
 using RenkYolu.Core;
 using RenkYolu.Grid;
 using UnityEngine;
+using RenkYolu.UI;
 
 namespace RenkYolu.Managers
 {
@@ -108,12 +109,25 @@ namespace RenkYolu.Managers
 
             GameManager.Instance.ChangeState(GameState.LevelFailed);
 
+            int finalScore = ScoreManager.Instance != null
+                ? ScoreManager.Instance.CurrentScore
+                : 0;
+
             Debug.Log(
                 $"FAIL | Wrong Finish Color | " +
                 $"Start Color: {startColor} | " +
                 $"Finish Color: {finishColor} | " +
-                $"Final Score: {ScoreManager.Instance?.CurrentScore}"
+                $"Final Score: {finalScore}"
             );
+
+            if (FailPopupUI.Instance != null)
+            {
+                FailPopupUI.Instance.ShowFail(startColor, finishColor, finalScore);
+            }
+            else
+            {
+                Debug.LogWarning("FailPopupUI is missing. Fail popup cannot be shown.");
+            }
         }
 
         private void HandleFail(string reason)

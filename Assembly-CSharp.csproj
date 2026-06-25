@@ -52,6 +52,7 @@
     <Compile Include="Assets/Scripts/Managers/GameResultManager.cs" />
     <Compile Include="Assets/Scripts/Grid/Tile.cs" />
     <Compile Include="Assets/Scripts/Core/AppSettings.cs" />
+    <Compile Include="Assets/Scripts/UI/FailPopupUI.cs" />
     <Compile Include="Assets/Scripts/Grid/Data/TileDefinitionData.cs" />
     <Compile Include="Assets/Scripts/Managers/GameManager.cs" />
     <Compile Include="Assets/Scripts/Grid/Data/TileOperationData.cs" />
