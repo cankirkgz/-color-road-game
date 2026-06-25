@@ -19,6 +19,12 @@ namespace RenkYolu.UI
         [SerializeField] private Color defaultTextColor = Color.white;
         [SerializeField] private Color shadowColor = new Color(0f, 0f, 0f, 0.75f);
 
+        [Header("Font Sizes")]
+        [SerializeField] private float operationFontSize = 28f;
+        [SerializeField] private float bonusFontSize = 30f;
+        [SerializeField] private float comboFontSize = 30f;
+        [SerializeField] private float longTextFontSize = 24f;
+
         public void Initialize(string value, Color accentColor)
         {
             if (text == null)
@@ -27,16 +33,45 @@ namespace RenkYolu.UI
                 return;
             }
 
+            float targetFontSize = GetFontSize(value);
+
             text.text = value;
             text.color = defaultTextColor;
+            text.fontSize = targetFontSize;
 
             if (shadowText != null)
             {
                 shadowText.text = value;
                 shadowText.color = shadowColor;
+                shadowText.fontSize = targetFontSize;
             }
 
             PlayAnimation();
+        }
+
+        private float GetFontSize(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return operationFontSize;
+            }
+
+            if (value.Length >= 8)
+            {
+                return longTextFontSize;
+            }
+
+            if (value.Contains("COMBO"))
+            {
+                return comboFontSize;
+            }
+
+            if (value.Contains("BONUS"))
+            {
+                return bonusFontSize;
+            }
+
+            return operationFontSize;
         }
 
         private void PlayAnimation()

@@ -1,5 +1,6 @@
 using System.Collections;
 using RenkYolu.Grid;
+using RenkYolu.Managers;
 using UnityEngine;
 
 namespace RenkYolu.Player
@@ -46,6 +47,15 @@ namespace RenkYolu.Player
             transform.localScale = Vector3.one * playerSize;
 
             Debug.Log($"Player Spawned | Tile X: {tile.X}, Y: {tile.Y}");
+
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.SetStartTile(tile);
+            }
+            else
+            {
+                Debug.LogWarning("ScoreManager is missing. Start color cannot be set.");
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ using RenkYolu.Grid.Data;
 using TMPro;
 using UnityEngine;
 using System.Collections;
+using DG.Tweening;
 
 namespace RenkYolu.Grid
 {
@@ -322,6 +323,31 @@ namespace RenkYolu.Grid
             }
 
             return colorData.Color;
+        }
+
+        public void PlayGlow()
+        {
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            Color baseColor = spriteRenderer.color;
+            Color glowColor = Color.white;
+
+            spriteRenderer.DOKill();
+
+            Sequence glowSequence = DOTween.Sequence();
+
+            glowSequence.Append(
+                spriteRenderer.DOColor(glowColor, 0.08f)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            glowSequence.Append(
+                spriteRenderer.DOColor(baseColor, 0.18f)
+                    .SetEase(Ease.InQuad)
+            );
         }
     }
 }

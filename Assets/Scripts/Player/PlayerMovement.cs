@@ -134,6 +134,36 @@ namespace RenkYolu.Player
             if (ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.ApplyOperationFromTile(tile);
+
+                int comboValue = ScoreManager.Instance.UpdateComboFromTile(tile);
+
+                if (comboValue >= ScoreManager.Instance.MinimumComboToShow &&
+                    FloatingTextSpawner.Instance != null)
+                {
+                    FloatingTextSpawner.Instance.ShowCombo(tile, comboValue);
+                }
+
+                if (comboValue >= 3 && GameplayFXManager.Instance != null)
+                {
+                    GameplayFXManager.Instance.PlayComboFx(tile, transform);
+                }
+
+                bool bonusApplied = ScoreManager.Instance.TryApplyColorBonus(tile);
+
+                if (bonusApplied && FloatingTextSpawner.Instance != null)
+                {
+                    FloatingTextSpawner.Instance.ShowColorBonus(tile, 2);
+                }
+
+                if (bonusApplied && GameplayFXManager.Instance != null)
+                {
+                    GameplayFXManager.Instance.PlayBonusFx(tile, transform);
+                }
+
+                if (IsCriticalOperation(tile.OperationType) && GameplayFXManager.Instance != null)
+                {
+                    GameplayFXManager.Instance.PlayCriticalFx(tile, transform);
+                }
             }
             else
             {
@@ -152,6 +182,12 @@ namespace RenkYolu.Player
             OnTileReached?.Invoke(tile);
 
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y} | Current Score: {ScoreManager.Instance?.CurrentScore}");
+        }
+
+        private bool IsCriticalOperation(TileOperationType operationType)
+        {
+            return operationType == TileOperationType.MultiplyTwo ||
+                operationType == TileOperationType.MultiplyThree;
         }
     }
 }
