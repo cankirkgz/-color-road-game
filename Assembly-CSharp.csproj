@@ -73,6 +73,7 @@
     <Compile Include="Assets/Scripts/Grid/TileColorType.cs" />
     <Compile Include="Assets/Scripts/Grid/Data/TileColorData.cs" />
     <Compile Include="Assets/Scripts/Input/PathInputManager.cs" />
+    <Compile Include="Assets/Scripts/Levels/LevelData.cs" />
     <Compile Include="Assets/Scripts/UI/GameFlowUI.cs" />
   </ItemGroup>
   <ItemGroup>
