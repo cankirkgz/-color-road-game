@@ -1,3 +1,4 @@
+using RenkYolu.Levels;
 using UnityEngine;
 
 namespace RenkYolu.Grid
@@ -12,9 +13,13 @@ namespace RenkYolu.Grid
 
         [Header("Tile Settings")]
         [SerializeField] private Tile tilePrefab;
+
         [Header("Start Tile Settings")]
         [SerializeField] private int startTileX = 0;
         [SerializeField] private int startTileY = 0;
+
+        [Header("Level Settings")]
+        [SerializeField] private bool generateRandomGridIfNoLevelLoaded = true;
 
         [Header("Random Operation Chances")]
         [SerializeField] private int positiveChance = 65;
@@ -24,12 +29,14 @@ namespace RenkYolu.Grid
         private Tile[,] tiles;
         private float calculatedTileSize;
         private Tile startTile;
+        private LevelData currentLevelData;
 
         public int Width => width;
         public int Height => height;
         public float TileSize => calculatedTileSize;
         public bool HasGenerated => tiles != null;
         public Tile StartTile => startTile;
+        public LevelData CurrentLevelData => currentLevelData;
 
         public Tile GetStartTile()
         {
@@ -43,7 +50,20 @@ namespace RenkYolu.Grid
 
         private void Start()
         {
-            GenerateGrid();
+            if (HasGenerated)
+            {
+                return;
+            }
+
+            if (generateRandomGridIfNoLevelLoaded)
+            {
+                Debug.LogWarning("No LevelData was loaded. Generating random grid as fallback.");
+                GenerateRandomGrid();
+            }
+            else
+            {
+                Debug.LogError("No LevelData was loaded and random fallback is disabled.");
+            }
         }
 
         private void Update()
@@ -57,6 +77,11 @@ namespace RenkYolu.Grid
             {
                 RevealAllTiles();
             }
+        }
+
+        public void LoadLevel(LevelData levelData)
+        {
+            GenerateGridFromLevel(levelData);
         }
 
         public Tile GetTileAt(int x, int y)
@@ -116,13 +141,136 @@ namespace RenkYolu.Grid
             Debug.Log("All Tiles Revealed");
         }
 
-        private void GenerateGrid()
+        private void GenerateGridFromLevel(LevelData levelData)
+        {
+            if (levelData == null)
+            {
+                Debug.LogError("LevelData is missing! Cannot generate level grid.");
+                return;
+            }
+
+            if (tilePrefab == null)
+            {
+                Debug.LogError("Tile Prefab is missing!");
+                return;
+            }
+
+            if (!levelData.HasValidSize())
+            {
+                Debug.LogError($"Invalid LevelData size! Level: {levelData.LevelName}");
+                return;
+            }
+
+            if (!levelData.HasCorrectTileCount())
+            {
+                Debug.LogWarning(
+                    $"LevelData tile count mismatch! " +
+                    $"Level: {levelData.LevelName} | " +
+                    $"Expected: {levelData.ExpectedTileCount} | " +
+                    $"Actual: {levelData.Tiles.Count}"
+                );
+            }
+
+            currentLevelData = levelData;
+
+            width = levelData.GridWidth;
+            height = levelData.GridHeight;
+            startTileX = levelData.StartTileX;
+            startTileY = levelData.StartTileY;
+
+            ClearGrid();
+
+            tiles = new Tile[width, height];
+            calculatedTileSize = CalculateTileSize();
+
+            float gridWidth = (width - 1) * calculatedTileSize;
+            float gridHeight = (height - 1) * calculatedTileSize;
+
+            Vector3 gridOffset = new Vector3(
+                -gridWidth / 2f,
+                -gridHeight / 2f,
+                0f
+            );
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Vector3 spawnPosition = new Vector3(
+                        x * calculatedTileSize,
+                        y * calculatedTileSize,
+                        0f
+                    ) + gridOffset;
+
+                    LevelTileData levelTileData = levelData.GetTileDataAt(x, y);
+
+                    TileColorType colorType = TileColorType.Red;
+                    TileOperationType operationType = TileOperationType.PlusOne;
+                    int operationValue = 1;
+                    bool isWalkable = true;
+
+                    if (levelTileData != null)
+                    {
+                        colorType = levelTileData.ColorType;
+                        operationType = levelTileData.OperationType;
+                        operationValue = levelTileData.OperationValue;
+                        isWalkable = levelTileData.IsWalkable;
+                    }
+                    else
+                    {
+                        Debug.LogError(
+                            $"Missing tile data in LevelData! " +
+                            $"Level: {levelData.LevelName} | X: {x}, Y: {y}. " +
+                            $"Using safe default tile."
+                        );
+                    }
+
+                    Tile tile = Instantiate(
+                        tilePrefab,
+                        spawnPosition,
+                        Quaternion.identity,
+                        transform
+                    );
+
+                    tile.transform.localScale = Vector3.one * calculatedTileSize;
+
+                    int tileId = y * width + x;
+
+                    tile.InitializeFromLevelData(
+                        tileId,
+                        x,
+                        y,
+                        colorType,
+                        operationType,
+                        operationValue,
+                        isWalkable
+                    );
+
+                    tiles[x, y] = tile;
+                }
+            }
+
+            SetTileNeighbours();
+            SetStartTile();
+
+            Debug.Log(
+                $"Level Grid Generated | " +
+                $"Level ID: {levelData.LevelId} | " +
+                $"Level Name: {levelData.LevelName} | " +
+                $"Width: {width}, Height: {height}, " +
+                $"Tile Size: {calculatedTileSize}, Total Tiles: {width * height}"
+            );
+        }
+
+        private void GenerateRandomGrid()
         {
             if (tilePrefab == null)
             {
                 Debug.LogError("Tile Prefab is missing!");
                 return;
             }
+
+            ClearGrid();
 
             tiles = new Tile[width, height];
             calculatedTileSize = CalculateTileSize();
@@ -149,7 +297,13 @@ namespace RenkYolu.Grid
                     TileColorType randomColor = GetRandomColor();
                     TileOperationType randomOperation = GetControlledRandomOperation();
 
-                    Tile tile = Instantiate(tilePrefab, spawnPosition, Quaternion.identity, transform);
+                    Tile tile = Instantiate(
+                        tilePrefab,
+                        spawnPosition,
+                        Quaternion.identity,
+                        transform
+                    );
+
                     tile.transform.localScale = Vector3.one * calculatedTileSize;
 
                     int tileId = y * width + x;
@@ -163,7 +317,31 @@ namespace RenkYolu.Grid
             SetTileNeighbours();
             SetStartTile();
 
-            Debug.Log($"Grid Generated | Width: {width}, Height: {height}, Tile Size: {calculatedTileSize}, Total Tiles: {width * height}");
+            Debug.Log(
+                $"Random Grid Generated | " +
+                $"Width: {width}, Height: {height}, " +
+                $"Tile Size: {calculatedTileSize}, Total Tiles: {width * height}"
+            );
+        }
+
+        private void ClearGrid()
+        {
+            if (tiles != null)
+            {
+                for (int x = 0; x < tiles.GetLength(0); x++)
+                {
+                    for (int y = 0; y < tiles.GetLength(1); y++)
+                    {
+                        if (tiles[x, y] != null)
+                        {
+                            Destroy(tiles[x, y].gameObject);
+                        }
+                    }
+                }
+            }
+
+            tiles = null;
+            startTile = null;
         }
 
         private float CalculateTileSize()

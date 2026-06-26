@@ -69,6 +69,7 @@
     <Compile Include="Assets/Scripts/Grid/Data/TileDataLibrary.cs" />
     <Compile Include="Assets/Scripts/Grid/TileOperationType.cs" />
     <Compile Include="Assets/Scripts/UI/FloatingTextSpawner.cs" />
+    <Compile Include="Assets/Scripts/Levels/LevelLoader.cs" />
     <Compile Include="Assets/Scripts/Grid/GridManager.cs" />
     <Compile Include="Assets/Scripts/Grid/TileColorType.cs" />
     <Compile Include="Assets/Scripts/Grid/Data/TileColorData.cs" />

@@ -78,6 +78,48 @@ namespace RenkYolu.Grid
             Debug.Log($"Tile Data Created | ID: {TileId}, X: {X}, Y: {Y}, Color: {ColorType}, Operation: {OperationType}, Value: {OperationValue}, Visible: {IsVisible}, Walkable: {IsWalkable}");
         }
 
+        public void InitializeFromLevelData(
+            int newTileId,
+            int gridX,
+            int gridY,
+            TileColorType newColorType,
+            TileOperationType newOperationType,
+            int newOperationValue,
+            bool walkable
+        )
+        {
+            tileData = new TileData(
+                newTileId,
+                gridX,
+                gridY,
+                newColorType,
+                newOperationType,
+                newOperationValue,
+                true,
+                walkable
+            );
+
+            ApplyColor();
+            ApplyOperationText();
+
+            originalColor = spriteRenderer.color;
+            isSelected = false;
+
+            if (selectionBorder != null)
+            {
+                selectionBorder.SetActive(false);
+            }
+
+            gameObject.name = $"Tile_{TileId}_X{X}_Y{Y}";
+
+            Debug.Log(
+                $"Level Tile Data Created | " +
+                $"ID: {TileId}, X: {X}, Y: {Y}, " +
+                $"Color: {ColorType}, Operation: {OperationType}, " +
+                $"Value: {OperationValue}, Visible: {IsVisible}, Walkable: {IsWalkable}"
+            );
+        }
+
         public void SetNeighbours(Tile up, Tile down, Tile left, Tile right)
         {
             UpNeighbour = up;
