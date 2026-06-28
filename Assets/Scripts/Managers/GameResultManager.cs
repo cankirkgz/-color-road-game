@@ -2,6 +2,8 @@ using RenkYolu.Core;
 using RenkYolu.Grid;
 using UnityEngine;
 using RenkYolu.UI;
+using RenkYolu.Levels;
+using RenkYolu.InputSystem;
 
 namespace RenkYolu.Managers
 {
@@ -11,6 +13,10 @@ namespace RenkYolu.Managers
 
         [Header("Debug")]
         [SerializeField] private bool logResultDetails = true;
+
+        [Header("References")]
+        [SerializeField] private LevelLoader levelLoader;
+        [SerializeField] private PathInputManager pathInputManager;
 
         private Tile lastFinishTile;
         private bool lastResultWasSuccess;
@@ -100,7 +106,15 @@ namespace RenkYolu.Managers
                 : 0;
 
             int bonusScore = 0;
-            int totalScore = finalScore + bonusScore;
+
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.CommitCurrentLevelScore();
+            }
+
+            int totalScore = ScoreManager.Instance != null
+                ? ScoreManager.Instance.TotalScore
+                : finalScore + bonusScore;
 
             Debug.Log(
                 $"SUCCESS | " +
@@ -155,6 +169,47 @@ namespace RenkYolu.Managers
             GameManager.Instance.ChangeState(GameState.LevelFailed);
 
             Debug.Log($"FAIL | Reason: {reason}");
+        }
+
+        public void OnNextLevelButtonClicked()
+        {
+            if (!lastResultWasSuccess)
+            {
+                Debug.LogWarning("Next Level button clicked but last result was not success.");
+                return;
+            }
+
+            LevelLoader loader = levelLoader != null
+                ? levelLoader
+                : LevelLoader.Instance;
+
+            if (loader == null)
+            {
+                Debug.LogError("LevelLoader is missing. Cannot load next level.");
+                return;
+            }
+
+            if (!loader.HasNextLevel())
+            {
+                Debug.Log("There is no next level.");
+                return;
+            }
+
+            if (pathInputManager != null)
+            {
+                pathInputManager.ClearPath();
+            }
+
+            loader.LoadNextLevel();
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RestartLevelFlow();
+            }
+            else
+            {
+                Debug.LogError("GameManager is missing. Cannot restart level flow.");
+            }
         }
     }
 }

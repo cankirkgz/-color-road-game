@@ -59,5 +59,24 @@ namespace RenkYolu.Player
                 Debug.LogWarning("ScoreManager is missing. Start color cannot be set.");
             }
         }
+
+        public void SpawnAtStartTile()
+        {
+            if (gridManager == null || !gridManager.HasGenerated)
+            {
+                Debug.LogWarning("Player cannot spawn. Grid is not ready.");
+                return;
+            }
+
+            Tile startTile = gridManager.GetStartTile();
+
+            if (startTile == null)
+            {
+                Debug.LogWarning("Player cannot spawn. Start tile is missing.");
+                return;
+            }
+
+            SpawnAtTile(startTile);
+        }
     }
 }

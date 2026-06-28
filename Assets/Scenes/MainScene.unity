@@ -464,6 +464,17 @@ MonoBehaviour:
   zPosition: 0
   squashAmount: 0.12
   stretchAmount: 0.12
+--- !u!114 &133372942 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3935002869047864637, guid: 61d7d4db0e612457aa85d47fd854456d, type: 3}
+  m_PrefabInstance: {fileID: 9201995368563299370}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133372937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c44a18ef92c403ca67782acf9f2526, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Player.PlayerController
 --- !u!1 &138506292
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,6 +726,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Managers.GameResultManager
   logResultDetails: 1
+  levelLoader: {fileID: 1893516582}
+  pathInputManager: {fileID: 1780222544}
 --- !u!4 &332733692
 Transform:
   m_ObjectHideFlags: 0
@@ -2746,12 +2759,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Managers.ScoreManager
   currentScore: 0
+  totalScore: 0
   colorBonusMultiplier: 2
   startColor: 0
   startTileId: -1
   hasStartColor: 0
   comboCounter: 0
   minimumComboToShow: 2
+  levelStartScore: 0
 --- !u!4 &1667543828
 Transform:
   m_ObjectHideFlags: 0
@@ -3035,7 +3050,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1800409787}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 332733691}
+        m_TargetAssemblyTypeName: RenkYolu.Managers.GameResultManager, Assembly-CSharp
+        m_MethodName: OnNextLevelButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1800409787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3496,6 +3523,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1893516581}
+  - component: {fileID: 1893516582}
   m_Layer: 0
   m_Name: LevelLoader
   m_TagString: Untagged
@@ -3518,6 +3546,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1893516582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1893516580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a220ff2854734ce78502efb67bea2e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Levels.LevelLoader
+  gridManager: {fileID: 1057543997}
+  startingLevel: {fileID: 11400000, guid: 84fe81d4d1d0146158e601b880c55511, type: 2}
+  levels:
+  - {fileID: 11400000, guid: 84fe81d4d1d0146158e601b880c55511, type: 2}
+  - {fileID: 11400000, guid: d1f334088a4d2cc4ca10d71c96910873, type: 2}
+  - {fileID: 11400000, guid: c774d917b061aec4d8f5d2559cd41508, type: 2}
+  - {fileID: 11400000, guid: 019587d43df4df449a52e661bd998722, type: 2}
+  - {fileID: 11400000, guid: c8e7bd92be1c5fa4bb20bf626def76c7, type: 2}
+  - {fileID: 11400000, guid: e7ac1271fb0f115409be7efce15eaa61, type: 2}
+  - {fileID: 11400000, guid: ba2f986fe9beb334aa0ae8f01ff5c397, type: 2}
+  - {fileID: 11400000, guid: 2d967c2b5246dc34da6552d81a2d637a, type: 2}
+  - {fileID: 11400000, guid: 94a4ae6080b6c7f47a6cc932ace0b907, type: 2}
+  - {fileID: 11400000, guid: c21d89a5ab13b7546905d46985e7c13a, type: 2}
+  - {fileID: 11400000, guid: dfe7f4a96f6efed4d89cfa0f87d48e6e, type: 2}
+  - {fileID: 11400000, guid: 9f20233315cd4e44a9af08ad742714b0, type: 2}
+  - {fileID: 11400000, guid: 0679f1fb90a593e4faba208fb89e83da, type: 2}
+  - {fileID: 11400000, guid: bce1fc7576ff6454abfb7afe11d9e54a, type: 2}
+  - {fileID: 11400000, guid: 0f028ba38037348488c495dbaa7e8007, type: 2}
+  - {fileID: 11400000, guid: a982d9b7e72912141a50e95d86b83252, type: 2}
+  - {fileID: 11400000, guid: e56193ec8fc1d7345a47bc9232a14132, type: 2}
+  - {fileID: 11400000, guid: 1531b1d607576e440b2f24c256c1b947, type: 2}
+  - {fileID: 11400000, guid: 9afcdef6d23af3a4792577937942ec09, type: 2}
+  - {fileID: 11400000, guid: 9dc70e09d26b332449731824c4ca21f1, type: 2}
+  playerController: {fileID: 133372942}
+  pathInputManager: {fileID: 1780222544}
 --- !u!1 &1996963242
 GameObject:
   m_ObjectHideFlags: 0

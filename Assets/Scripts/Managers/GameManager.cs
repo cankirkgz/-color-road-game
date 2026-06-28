@@ -18,6 +18,8 @@ namespace RenkYolu.Managers
         [SerializeField] private float memorizeDuration = 5f;
         [SerializeField] private GameFlowUI gameFlowUI;
 
+        private Coroutine levelFlowCoroutine;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -35,7 +37,19 @@ namespace RenkYolu.Managers
 
         private void Start()
         {
-            StartCoroutine(StartLevelFlow());
+            RestartLevelFlow();
+        }
+
+        public void RestartLevelFlow()
+        {
+            Time.timeScale = 1f;
+
+            if (levelFlowCoroutine != null)
+            {
+                StopCoroutine(levelFlowCoroutine);
+            }
+
+            levelFlowCoroutine = StartCoroutine(StartLevelFlow());
         }
 
         private IEnumerator StartLevelFlow()
@@ -97,11 +111,32 @@ namespace RenkYolu.Managers
         {
             Time.timeScale = 1f;
 
-            string currentSceneName = SceneManager.GetActiveScene().name;
+            Debug.Log("Restarting current level without scene reload.");
 
-            Debug.Log($"Restarting Level | Scene: {currentSceneName}");
+            if (FailPopupUI.Instance != null)
+            {
+                FailPopupUI.Instance.HideInstant();
+            }
 
-            SceneManager.LoadScene(currentSceneName);
+            if (SuccessPopupUI.Instance != null)
+            {
+                SuccessPopupUI.Instance.HideInstant();
+            }
+            
+            if (RenkYolu.Levels.LevelLoader.Instance != null)
+            {
+                if (ScoreManager.Instance != null)
+                {
+                    ScoreManager.Instance.RestoreLevelStartScore();
+                }
+
+                RenkYolu.Levels.LevelLoader.Instance.ReloadCurrentLevel();
+                RestartLevelFlow();
+            }
+            else
+            {
+                Debug.LogError("LevelLoader is missing. Cannot restart current level.");
+            }
         }
     }
 }

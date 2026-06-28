@@ -40,11 +40,11 @@ namespace RenkYolu.Player
 
             if (ScoreManager.Instance != null)
             {
-                ScoreManager.Instance.ResetScore();
+                ScoreManager.Instance.ResetCombo();
             }
             else
             {
-                Debug.LogWarning("ScoreManager is missing. Score will not be reset.");
+                Debug.LogWarning("ScoreManager is missing. Combo will not be reset.");
             }
 
             StartCoroutine(MoveThroughPath(path));

@@ -354,6 +354,29 @@ namespace RenkYolu.InputSystem
             Debug.Log($"Path Confirmed | Tile Count: {selectedPath.Count}");
         }
 
+        public void ClearPath()
+        {
+            for (int i = 0; i < selectedPath.Count; i++)
+            {
+                if (selectedPath[i] != null)
+                {
+                    selectedPath[i].Deselect();
+                }
+            }
+
+            selectedPath.Clear();
+
+            isDrawing = false;
+            startedWithExistingPath = false;
+            pathChangedDuringDrag = false;
+            pointerStartTile = null;
+            lastHandledTile = null;
+
+            ClearPathLine();
+
+            Debug.Log("Path cleared.");
+        }
+
         private void ClearPathLine()
         {
             if (pathLineRenderer == null)

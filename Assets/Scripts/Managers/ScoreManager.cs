@@ -10,6 +10,7 @@ namespace RenkYolu.Managers
 
         [Header("Score")]
         [SerializeField] private int currentScore;
+        [SerializeField] private int totalScore;
 
         [Header("Color Bonus")]
         [SerializeField] private int colorBonusMultiplier = 2;
@@ -20,12 +21,14 @@ namespace RenkYolu.Managers
         [Header("Combo")]
         [SerializeField] private int comboCounter;
         [SerializeField] private int minimumComboToShow = 2;
+        [SerializeField] private int levelStartScore;
 
         public int CurrentScore => currentScore;
         public TileColorType StartColor => startColor;
         public bool HasStartColor => hasStartColor;
         public int ComboCounter => comboCounter;
         public int MinimumComboToShow => minimumComboToShow;
+        public int TotalScore => totalScore;
 
         private void Awake()
         {
@@ -63,6 +66,17 @@ namespace RenkYolu.Managers
             comboCounter = 0;
 
             Debug.Log("Score Reset | Current Score: 0 | Combo Reset");
+        }
+
+        public void CommitCurrentLevelScore()
+        {
+            totalScore += currentScore;
+
+            Debug.Log(
+                $"Level Score Committed | " +
+                $"Level Score: {currentScore} | " +
+                $"Total Score: {totalScore}"
+            );
         }
 
         public void ApplyOperationFromTile(Tile tile)
@@ -195,6 +209,31 @@ namespace RenkYolu.Managers
             }
 
             Debug.Log($"Final Score Calculated | Score: {currentScore}");
+        }
+
+        public void SaveLevelStartScore()
+        {
+            currentScore = 0;
+            levelStartScore = 0;
+            comboCounter = 0;
+
+            Debug.Log("Level Start Score Saved | Current Score: 0");
+        }
+
+        public void RestoreLevelStartScore()
+        {
+            currentScore = 0;
+            levelStartScore = 0;
+            comboCounter = 0;
+
+            Debug.Log("Level Start Score Restored | Current Score: 0");
+        }
+
+        public void ResetCombo()
+        {
+            comboCounter = 0;
+
+            Debug.Log("Combo Reset");
         }
     }
 }

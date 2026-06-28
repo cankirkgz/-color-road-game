@@ -149,7 +149,9 @@ namespace RenkYolu.UI
 
         private void HandleNextLevelButtonClicked()
         {
-            Debug.Log("Next Level button clicked. Level system will be added later.");
+            Debug.Log("Next Level button clicked.");
+
+            HideInstant();
         }
 
         private void HandleReplayButtonClicked()

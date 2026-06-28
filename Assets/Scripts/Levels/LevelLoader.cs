@@ -1,5 +1,9 @@
+using System.Collections.Generic;
 using RenkYolu.Grid;
 using UnityEngine;
+using RenkYolu.Player;
+using RenkYolu.Managers;
+using RenkYolu.InputSystem;
 
 namespace RenkYolu.Levels
 {
@@ -12,8 +16,24 @@ namespace RenkYolu.Levels
 
         [Header("Level Settings")]
         [SerializeField] private LevelData startingLevel;
+        [SerializeField] private List<LevelData> levels = new List<LevelData>();
+        [SerializeField] private PlayerController playerController;
+        [SerializeField] private PathInputManager pathInputManager;
+
+        private int currentLevelIndex;
 
         public LevelData CurrentLevelData { get; private set; }
+
+        public void ReloadCurrentLevel()
+        {
+            if (CurrentLevelData == null)
+            {
+                Debug.LogWarning("Current LevelData is missing. Cannot reload current level.");
+                return;
+            }
+
+            LoadLevel(CurrentLevelData);
+        }
 
         private void Awake()
         {
@@ -30,12 +50,20 @@ namespace RenkYolu.Levels
 
         private void LoadStartingLevel()
         {
+            if (levels != null && levels.Count > 0)
+            {
+                currentLevelIndex = GetStartingLevelIndex();
+                LoadLevel(levels[currentLevelIndex]);
+                return;
+            }
+
             if (startingLevel == null)
             {
                 Debug.LogError("Starting LevelData is missing on LevelLoader!");
                 return;
             }
 
+            currentLevelIndex = 0;
             LoadLevel(startingLevel);
         }
 
@@ -55,13 +83,83 @@ namespace RenkYolu.Levels
 
             CurrentLevelData = levelData;
 
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.SaveLevelStartScore();
+            }
+
             Debug.Log(
                 $"Loading Level | " +
                 $"ID: {levelData.LevelId} | " +
                 $"Name: {levelData.LevelName}"
             );
 
+            if (pathInputManager != null)
+            {
+                pathInputManager.ClearPath();
+            }
+            else
+            {
+                Debug.LogWarning("PathInputManager reference is missing on LevelLoader!");
+            }
+
             gridManager.LoadLevel(levelData);
+
+            if (playerController != null)
+            {
+                playerController.SpawnAtStartTile();
+            }
+            else
+            {
+                Debug.LogWarning("PlayerController reference is missing on LevelLoader!");
+            }
+        }
+
+        public void LoadNextLevel()
+        {
+            if (levels == null || levels.Count == 0)
+            {
+                Debug.LogWarning("Level list is empty. Cannot load next level.");
+                return;
+            }
+
+            if (currentLevelIndex >= levels.Count - 1)
+            {
+                Debug.Log("Last level completed. No next level available.");
+                return;
+            }
+
+            currentLevelIndex++;
+
+            LoadLevel(levels[currentLevelIndex]);
+        }
+
+        public bool HasNextLevel()
+        {
+            return levels != null && levels.Count > 0 && currentLevelIndex < levels.Count - 1;
+        }
+
+        public int GetCurrentLevelNumber()
+        {
+            return currentLevelIndex + 1;
+        }
+
+        private int GetStartingLevelIndex()
+        {
+            if (startingLevel == null)
+            {
+                return 0;
+            }
+
+            int index = levels.IndexOf(startingLevel);
+
+            if (index < 0)
+            {
+                Debug.LogWarning("Starting Level is not in level list. Loading first level from list.");
+                return 0;
+            }
+
+            return index;
         }
     }
 }
