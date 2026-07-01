@@ -11,6 +11,7 @@ namespace RenkYolu.Grid.Data
         public int operationValue;
         public bool isVisible;
         public bool isWalkable;
+        public TileSpecialType specialType;
 
         public TileData(
             int newTileId,
@@ -20,7 +21,8 @@ namespace RenkYolu.Grid.Data
             TileOperationType newOperationType,
             int newOperationValue,
             bool visible,
-            bool walkable
+            bool walkable,
+            TileSpecialType newSpecialType
         )
         {
             tileId = newTileId;
@@ -31,6 +33,7 @@ namespace RenkYolu.Grid.Data
             operationValue = newOperationValue;
             isVisible = visible;
             isWalkable = walkable;
+            specialType = newSpecialType;
         }
     }
 }

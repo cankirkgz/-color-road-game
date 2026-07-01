@@ -58,6 +58,7 @@
     <Compile Include="Assets\Scripts\UI\LevelMaxScoreUI.cs" />
     <Compile Include="Assets\Scripts\Managers\GameManager.cs" />
     <Compile Include="Assets\Scripts\Grid\Data\TileOperationData.cs" />
+    <Compile Include="Assets\Scripts\Grid\TileSpecialType.cs" />
     <Compile Include="Assets\Scripts\Core\GameState.cs" />
     <Compile Include="Assets\Scripts\Grid\Data\TileData.cs" />
     <Compile Include="Assets\Scripts\UI\SuccessPopupUI.cs" />

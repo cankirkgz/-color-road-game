@@ -37,7 +37,9 @@ namespace RenkYolu.Grid
         public TileOperationType OperationType => tileData.operationType;
         public int OperationValue => tileData.operationValue;
         public bool IsVisible => tileData.isVisible;
-        public bool IsWalkable => tileData.isWalkable;
+        public TileSpecialType SpecialType => tileData.specialType;
+        public bool IsWall => SpecialType == TileSpecialType.Wall;
+        public bool IsWalkable => tileData.isWalkable && !IsWall;
         public bool IsSelected => isSelected;
 
         public void Initialize(int newTileId, int gridX, int gridY, TileColorType newColorType, TileOperationType newOperationType)
@@ -59,7 +61,8 @@ namespace RenkYolu.Grid
                 newOperationType,
                 operationValue,
                 true,
-                true
+                true,
+                TileSpecialType.None
             );
 
             ApplyColor();
@@ -85,7 +88,8 @@ namespace RenkYolu.Grid
             TileColorType newColorType,
             TileOperationType newOperationType,
             int newOperationValue,
-            bool walkable
+            bool walkable,
+            TileSpecialType newSpecialType
         )
         {
             tileData = new TileData(
@@ -96,7 +100,8 @@ namespace RenkYolu.Grid
                 newOperationType,
                 newOperationValue,
                 true,
-                walkable
+                walkable,
+                newSpecialType
             );
 
             ApplyColor();
@@ -116,7 +121,8 @@ namespace RenkYolu.Grid
                 $"Level Tile Data Created | " +
                 $"ID: {TileId}, X: {X}, Y: {Y}, " +
                 $"Color: {ColorType}, Operation: {OperationType}, " +
-                $"Value: {OperationValue}, Visible: {IsVisible}, Walkable: {IsWalkable}"
+                $"Value: {OperationValue}, Visible: {IsVisible}, " +
+                $"Walkable: {IsWalkable}, SpecialType: {SpecialType}, IsWall: {IsWall}"
             );
         }
 

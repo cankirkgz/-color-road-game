@@ -208,6 +208,7 @@ namespace RenkYolu.Grid
                     TileOperationType operationType = TileOperationType.PlusOne;
                     int operationValue = 1;
                     bool isWalkable = true;
+                    TileSpecialType specialType = TileSpecialType.None;
 
                     if (levelTileData != null)
                     {
@@ -215,6 +216,7 @@ namespace RenkYolu.Grid
                         operationType = levelTileData.OperationType;
                         operationValue = levelTileData.OperationValue;
                         isWalkable = levelTileData.IsWalkable;
+                        specialType = levelTileData.SpecialType;
                     }
                     else
                     {
@@ -243,7 +245,8 @@ namespace RenkYolu.Grid
                         colorType,
                         operationType,
                         operationValue,
-                        isWalkable
+                        isWalkable,
+                        specialType
                     );
 
                     tiles[x, y] = tile;

@@ -128,6 +128,7 @@ namespace RenkYolu.Levels
         [SerializeField] private TileOperationType operationType = TileOperationType.PlusOne;
         [SerializeField] private int operationValue = 1;
         [SerializeField] private bool isWalkable = true;
+        [SerializeField] private TileSpecialType specialType = TileSpecialType.None;
 
         public int X => x;
         public int Y => y;
@@ -135,6 +136,7 @@ namespace RenkYolu.Levels
         public TileOperationType OperationType => operationType;
         public int OperationValue => operationValue;
         public bool IsWalkable => isWalkable;
+        public TileSpecialType SpecialType => specialType;
 
         public void RefreshOperationValue()
         {
