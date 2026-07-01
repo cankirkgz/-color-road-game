@@ -11,6 +11,8 @@ namespace RenkYolu.Managers
         [Header("Score")]
         [SerializeField] private int currentScore;
         [SerializeField] private int totalScore;
+        private const string TotalScoreKey = "TotalScore";
+        private const string BestScoreKeyPrefix = "BestScore_Level_";
         private readonly Dictionary<int, int> bestScoresByLevelId = new Dictionary<int, int>();
 
         [Header("Color Bonus")]
@@ -40,6 +42,7 @@ namespace RenkYolu.Managers
             }
 
             Instance = this;
+            LoadTotalScore();
         }
 
         public void SetStartTile(Tile startTile)
@@ -71,12 +74,13 @@ namespace RenkYolu.Managers
 
         public void CommitCurrentLevelScore(int levelId)
         {
-            int previousBestScore = 0;
-
-            if (bestScoresByLevelId.ContainsKey(levelId))
+            if (levelId <= 0)
             {
-                previousBestScore = bestScoresByLevelId[levelId];
+                Debug.LogWarning("Level score commit skipped. Invalid level id.");
+                return;
             }
+
+            int previousBestScore = GetBestScoreForLevel(levelId);
 
             if (currentScore <= previousBestScore)
             {
@@ -96,8 +100,12 @@ namespace RenkYolu.Managers
             bestScoresByLevelId[levelId] = currentScore;
             totalScore += scoreDifference;
 
+            PlayerPrefs.SetInt(GetBestScoreKey(levelId), currentScore);
+            PlayerPrefs.SetInt(TotalScoreKey, totalScore);
+            PlayerPrefs.Save();
+
             Debug.Log(
-                $"Level Best Score Updated | " +
+                $"Level Best Score Updated And Saved | " +
                 $"Level ID: {levelId} | " +
                 $"Old Best: {previousBestScore} | " +
                 $"New Best: {currentScore} | " +
@@ -261,6 +269,50 @@ namespace RenkYolu.Managers
             comboCounter = 0;
 
             Debug.Log("Combo Reset");
+        }
+
+        public int GetBestScoreForLevel(int levelId)
+        {
+            if (bestScoresByLevelId.ContainsKey(levelId))
+            {
+                return bestScoresByLevelId[levelId];
+            }
+
+            int savedBestScore = PlayerPrefs.GetInt(GetBestScoreKey(levelId), 0);
+            bestScoresByLevelId[levelId] = savedBestScore;
+
+            return savedBestScore;
+        }
+
+        private void LoadTotalScore()
+        {
+            totalScore = PlayerPrefs.GetInt(TotalScoreKey, 0);
+
+            Debug.Log($"Total Score Loaded | Total Score: {totalScore}");
+        }
+
+        private string GetBestScoreKey(int levelId)
+        {
+            return $"{BestScoreKeyPrefix}{levelId}";
+        }
+
+        public void ResetPersistentScores()
+        {
+            totalScore = 0;
+            currentScore = 0;
+            comboCounter = 0;
+            bestScoresByLevelId.Clear();
+
+            PlayerPrefs.DeleteKey(TotalScoreKey);
+
+            for (int i = 1; i <= 200; i++)
+            {
+                PlayerPrefs.DeleteKey(GetBestScoreKey(i));
+            }
+
+            PlayerPrefs.Save();
+
+            Debug.Log("Persistent scores reset.");
         }
     }
 }

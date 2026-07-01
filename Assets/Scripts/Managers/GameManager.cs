@@ -40,6 +40,21 @@ namespace RenkYolu.Managers
             RestartLevelFlow();
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                LevelProgressManager.ResetProgress();
+
+                if (ScoreManager.Instance != null)
+                {
+                    ScoreManager.Instance.ResetPersistentScores();
+                }
+
+                Debug.Log("DEBUG | Progress and scores reset with P key.");
+            }
+        }
+
         public void RestartLevelFlow()
         {
             Time.timeScale = 1f;
