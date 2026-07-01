@@ -107,14 +107,43 @@ namespace RenkYolu.Managers
 
             int bonusScore = 0;
 
+            LevelLoader loader = levelLoader != null
+                ? levelLoader
+                : LevelLoader.Instance;
+
+            int levelId = 0;
+
+            if (loader != null && loader.CurrentLevelData != null)
+            {
+                levelId = loader.CurrentLevelData.LevelId;
+            }
+
             if (ScoreManager.Instance != null)
             {
-                ScoreManager.Instance.CommitCurrentLevelScore();
+                ScoreManager.Instance.CommitCurrentLevelScore(levelId);
+            }
+
+            if (loader != null)
+            {
+                LevelProgressManager.UnlockNextLevel(
+                    loader.GetCurrentLevelNumber(),
+                    loader.GetLevelCount()
+                );
             }
 
             int totalScore = ScoreManager.Instance != null
                 ? ScoreManager.Instance.TotalScore
                 : finalScore + bonusScore;
+
+            int starCount = 1;
+
+            if (loader != null && loader.CurrentLevelData != null)
+            {
+                starCount = LevelStarCalculator.CalculateStars(
+                    loader.CurrentLevelData,
+                    finalScore
+                );
+            }
 
             Debug.Log(
                 $"SUCCESS | " +
@@ -122,12 +151,13 @@ namespace RenkYolu.Managers
                 $"Finish Color: {finishColor} | " +
                 $"Final Score: {finalScore} | " +
                 $"Bonus: {bonusScore} | " +
-                $"Total: {totalScore}"
+                $"Total: {totalScore} | " +
+                $"Stars: {starCount}"
             );
 
             if (SuccessPopupUI.Instance != null)
             {
-                SuccessPopupUI.Instance.ShowSuccess(finalScore, bonusScore, totalScore);
+                SuccessPopupUI.Instance.ShowSuccess(finalScore, bonusScore, totalScore, starCount);
             }
             else
             {

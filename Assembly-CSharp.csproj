@@ -54,6 +54,8 @@
     <Compile Include="Assets\Scripts\Core\AppSettings.cs" />
     <Compile Include="Assets\Scripts\UI\FailPopupUI.cs" />
     <Compile Include="Assets\Scripts\Grid\Data\TileDefinitionData.cs" />
+    <Compile Include="Assets\Scripts\Managers\LevelProgressManager.cs" />
+    <Compile Include="Assets\Scripts\UI\LevelMaxScoreUI.cs" />
     <Compile Include="Assets\Scripts\Managers\GameManager.cs" />
     <Compile Include="Assets\Scripts\Grid\Data\TileOperationData.cs" />
     <Compile Include="Assets\Scripts\Core\GameState.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="Assets\Scripts\Grid\TileOperationType.cs" />
     <Compile Include="Assets\Scripts\UI\FloatingTextSpawner.cs" />
     <Compile Include="Assets\Scripts\Levels\LevelLoader.cs" />
+    <Compile Include="Assets\Scripts\Levels\LevelStarCalculator.cs" />
     <Compile Include="Assets\Scripts\Grid\GridManager.cs" />
     <Compile Include="Assets\Scripts\Grid\TileColorType.cs" />
     <Compile Include="Assets\Scripts\Grid\Data\TileColorData.cs" />

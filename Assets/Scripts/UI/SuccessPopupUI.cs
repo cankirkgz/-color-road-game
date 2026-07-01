@@ -66,7 +66,7 @@ namespace RenkYolu.UI
             }
         }
 
-        public void ShowSuccess(int finalScore, int bonusScore, int totalScore)
+        public void ShowSuccess(int finalScore, int bonusScore, int totalScore, int starCount)
         {
             if (panelRoot == null || canvasGroup == null || popupPanel == null)
             {
@@ -107,7 +107,7 @@ namespace RenkYolu.UI
 
             if (starsText != null)
             {
-                starsText.text = "* * *";
+                starsText.text = RenkYolu.Levels.LevelStarCalculator.GetStarsText(starCount);
             }
 
             Sequence sequence = DOTween.Sequence();

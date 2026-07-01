@@ -84,7 +84,7 @@ MonoBehaviour:
     colorType: 3
     operationType: 2
     operationValue: 10
-    isWalkable: 0
+    isWalkable: 1
   - x: 1
     y: 2
     colorType: 0

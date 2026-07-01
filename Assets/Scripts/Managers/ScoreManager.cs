@@ -11,6 +11,7 @@ namespace RenkYolu.Managers
         [Header("Score")]
         [SerializeField] private int currentScore;
         [SerializeField] private int totalScore;
+        private readonly Dictionary<int, int> bestScoresByLevelId = new Dictionary<int, int>();
 
         [Header("Color Bonus")]
         [SerializeField] private int colorBonusMultiplier = 2;
@@ -68,13 +69,39 @@ namespace RenkYolu.Managers
             Debug.Log("Score Reset | Current Score: 0 | Combo Reset");
         }
 
-        public void CommitCurrentLevelScore()
+        public void CommitCurrentLevelScore(int levelId)
         {
-            totalScore += currentScore;
+            int previousBestScore = 0;
+
+            if (bestScoresByLevelId.ContainsKey(levelId))
+            {
+                previousBestScore = bestScoresByLevelId[levelId];
+            }
+
+            if (currentScore <= previousBestScore)
+            {
+                Debug.Log(
+                    $"Level Score Not Updated | " +
+                    $"Level ID: {levelId} | " +
+                    $"Current Score: {currentScore} | " +
+                    $"Best Score: {previousBestScore} | " +
+                    $"Total Score: {totalScore}"
+                );
+
+                return;
+            }
+
+            int scoreDifference = currentScore - previousBestScore;
+
+            bestScoresByLevelId[levelId] = currentScore;
+            totalScore += scoreDifference;
 
             Debug.Log(
-                $"Level Score Committed | " +
-                $"Level Score: {currentScore} | " +
+                $"Level Best Score Updated | " +
+                $"Level ID: {levelId} | " +
+                $"Old Best: {previousBestScore} | " +
+                $"New Best: {currentScore} | " +
+                $"Added To Total: {scoreDifference} | " +
                 $"Total Score: {totalScore}"
             );
         }

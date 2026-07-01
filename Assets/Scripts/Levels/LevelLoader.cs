@@ -139,6 +139,13 @@ namespace RenkYolu.Levels
             return levels != null && levels.Count > 0 && currentLevelIndex < levels.Count - 1;
         }
 
+        public int GetLevelCount()
+        {
+            return levels != null
+                ? levels.Count
+                : 0;
+        }
+
         public int GetCurrentLevelNumber()
         {
             return currentLevelIndex + 1;
@@ -146,20 +153,26 @@ namespace RenkYolu.Levels
 
         private int GetStartingLevelIndex()
         {
-            if (startingLevel == null)
+            int unlockedLevel = LevelProgressManager.GetUnlockedLevel();
+
+            if (levels == null || levels.Count == 0)
             {
                 return 0;
             }
 
-            int index = levels.IndexOf(startingLevel);
+            int unlockedLevelIndex = Mathf.Clamp(
+                unlockedLevel - 1,
+                0,
+                levels.Count - 1
+            );
 
-            if (index < 0)
-            {
-                Debug.LogWarning("Starting Level is not in level list. Loading first level from list.");
-                return 0;
-            }
+            Debug.Log(
+                $"Starting Level Loaded From Progress | " +
+                $"Unlocked Level: {unlockedLevel} | " +
+                $"Starting Index: {unlockedLevelIndex}"
+            );
 
-            return index;
+            return unlockedLevelIndex;
         }
     }
 }

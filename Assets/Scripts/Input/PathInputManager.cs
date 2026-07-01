@@ -82,6 +82,23 @@ namespace RenkYolu.InputSystem
                 return;
             }
 
+            if (selectedPath.Count == 0)
+            {
+                bool isBottomLeftStartTile =
+                    startTile.X == 0 &&
+                    startTile.Y == 0;
+
+                if (!isBottomLeftStartTile)
+                {
+                    Debug.LogWarning(
+                        $"Invalid Path Start | Path must start from bottom-left tile. " +
+                        $"Clicked X:{startTile.X}, Y:{startTile.Y}"
+                    );
+
+                    return;
+                }
+            }
+
             isDrawing = true;
             startedWithExistingPath = selectedPath.Count > 0;
             pathChangedDuringDrag = false;
