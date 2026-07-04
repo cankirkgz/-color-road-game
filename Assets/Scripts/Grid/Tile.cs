@@ -15,6 +15,7 @@ namespace RenkYolu.Grid
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private TMP_Text operationText;
         [SerializeField] private GameObject selectionBorder;
+        [SerializeField] private Color wallColor = new Color(0.12f, 0.12f, 0.12f);
 
         private Color originalColor;
         private bool isSelected;
@@ -65,10 +66,18 @@ namespace RenkYolu.Grid
                 TileSpecialType.None
             );
 
-            ApplyColor();
-            ApplyOperationText();
+            if (IsWall)
+            {
+                ApplyWallVisuals();
+            }
+            else
+            {
+                ApplyColor();
+                ApplyOperationText();
 
-            originalColor = spriteRenderer.color;
+                originalColor = spriteRenderer.color;
+            }
+
             isSelected = false;
 
             if (selectionBorder != null)
@@ -104,10 +113,18 @@ namespace RenkYolu.Grid
                 newSpecialType
             );
 
-            ApplyColor();
-            ApplyOperationText();
+            if (IsWall)
+            {
+                ApplyWallVisuals();
+            }
+            else
+            {
+                ApplyColor();
+                ApplyOperationText();
 
-            originalColor = spriteRenderer.color;
+                originalColor = spriteRenderer.color;
+            }
+
             isSelected = false;
 
             if (selectionBorder != null)
@@ -208,6 +225,13 @@ namespace RenkYolu.Grid
         {
             tileData.isVisible = true;
 
+            if (IsWall)
+            {
+                ApplyWallVisuals();
+                Debug.Log($"Wall Tile Reveal Ignored | ID: {TileId}, X: {X}, Y: {Y}");
+                return;
+            }
+
             ApplyOperationText();
 
             if (operationText != null)
@@ -240,6 +264,13 @@ namespace RenkYolu.Grid
         {
             tileData.isVisible = false;
 
+            if (IsWall)
+            {
+                ApplyWallVisuals();
+                Debug.Log($"Wall Tile Hide Ignored | ID: {TileId}, X: {X}, Y: {Y}");
+                return;
+            }
+
             if (operationText != null)
             {
                 if (textAnimationCoroutine != null)
@@ -259,6 +290,25 @@ namespace RenkYolu.Grid
             colorAnimationCoroutine = StartCoroutine(AnimateColor(spriteRenderer.color, Color.gray));
 
             Debug.Log($"Tile Hidden | ID: {TileId}, X: {X}, Y: {Y}");
+        }
+
+        private void ApplyWallVisuals()
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = wallColor;
+                originalColor = wallColor;
+            }
+
+            if (operationText != null)
+            {
+                operationText.gameObject.SetActive(false);
+            }
+
+            if (selectionBorder != null)
+            {
+                selectionBorder.SetActive(false);
+            }
         }
 
         private void ApplyColor()
@@ -415,6 +465,11 @@ namespace RenkYolu.Grid
             if (tileData == null)
             {
                 return Color.white;
+            }
+
+            if (IsWall)
+            {
+                return wallColor;
             }
 
             if (tileData.isVisible)
