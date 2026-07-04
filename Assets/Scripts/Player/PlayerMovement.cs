@@ -25,17 +25,17 @@ namespace RenkYolu.Player
 
         public bool IsMoving => isMoving;
 
-        public void StartMovement(IReadOnlyList<Tile> path)
+        public bool StartMovement(IReadOnlyList<Tile> path)
         {
             if (isMoving)
             {
-                return;
+                Debug.LogWarning("Movement cannot start. Player is already moving.");
+                return false;
             }
 
-            if (path == null || path.Count == 0)
+            if (!ValidatePathBeforeMovement(path))
             {
-                Debug.LogWarning("Movement cannot start. Path is empty.");
-                return;
+                return false;
             }
 
             if (ScoreManager.Instance != null)
@@ -48,6 +48,7 @@ namespace RenkYolu.Player
             }
 
             StartCoroutine(MoveThroughPath(path));
+            return true;
         }
 
         private IEnumerator MoveThroughPath(IReadOnlyList<Tile> path)
@@ -58,9 +59,10 @@ namespace RenkYolu.Player
             {
                 Tile targetTile = path[i];
 
-                if (targetTile == null)
+                if (!IsTileValidForMovement(targetTile, i))
                 {
-                    continue;
+                    StopMovementBecauseOfInvalidPath();
+                    yield break;
                 }
 
                 yield return MoveToTile(targetTile);
@@ -184,6 +186,78 @@ namespace RenkYolu.Player
             OnTileReached?.Invoke(tile);
 
             Debug.Log($"Player moved to tile | X: {tile.X}, Y: {tile.Y} | Current Score: {ScoreManager.Instance?.CurrentScore}");
+        }
+
+        private bool ValidatePathBeforeMovement(IReadOnlyList<Tile> path)
+        {
+            if (path == null || path.Count == 0)
+            {
+                Debug.LogWarning("Movement cannot start. Path is empty.");
+                return false;
+            }
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                if (!IsTileValidForMovement(path[i], i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool IsTileValidForMovement(Tile tile, int pathIndex)
+        {
+            if (tile == null)
+            {
+                Debug.LogWarning($"Movement blocked: path contains null tile at index {pathIndex}.");
+                return false;
+            }
+
+            if (tile.IsWall)
+            {
+                Debug.LogWarning(
+                    $"Movement blocked: path contains wall tile at index {pathIndex} | " +
+                    $"X:{tile.X}, Y:{tile.Y}"
+                );
+
+                tile.PlayBlockedFeedback();
+                return false;
+            }
+
+            if (!tile.IsWalkable)
+            {
+                Debug.LogWarning(
+                    $"Movement blocked: path contains non-walkable tile at index {pathIndex} | " +
+                    $"X:{tile.X}, Y:{tile.Y}, SpecialType:{tile.SpecialType}"
+                );
+
+                tile.PlayBlockedFeedback();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void StopMovementBecauseOfInvalidPath()
+        {
+            isMoving = false;
+
+            transform.DOKill();
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.ChangeState(RenkYolu.Core.GameState.Drawing);
+            }
+            else
+            {
+                Debug.LogWarning("GameManager is missing. Cannot return to Drawing state after invalid movement path.");
+            }
+
+            OnMovementFinished?.Invoke();
+
+            Debug.LogWarning("Player movement stopped because path became invalid.");
         }
 
         private Tile GetLastValidTile(IReadOnlyList<Tile> path)

@@ -399,13 +399,6 @@ namespace RenkYolu.InputSystem
                 return;
             }
 
-            GameManager.Instance.ChangeState(RenkYolu.Core.GameState.Walking);
-
-            if (gameFlowUI != null)
-            {
-                gameFlowUI.HideConfirmButton();
-            }
-
             if (playerMovement != null)
             {
                 playerMovement.OnTileReached -= HandlePlayerReachedTile;
@@ -414,11 +407,30 @@ namespace RenkYolu.InputSystem
                 playerMovement.OnMovementFinished -= HandlePlayerMovementFinished;
                 playerMovement.OnMovementFinished += HandlePlayerMovementFinished;
 
-                playerMovement.StartMovement(selectedPath);
+                bool movementStarted = playerMovement.StartMovement(selectedPath);
+
+                if (!movementStarted)
+                {
+                    playerMovement.OnTileReached -= HandlePlayerReachedTile;
+                    playerMovement.OnMovementFinished -= HandlePlayerMovementFinished;
+
+                    GameManager.Instance.ChangeState(RenkYolu.Core.GameState.Drawing);
+
+                    Debug.LogWarning("Path confirmation failed. Movement did not start.");
+                    return;
+                }
             }
             else
             {
                 Debug.LogError("PlayerMovement reference is missing on PathInputManager!");
+                return;
+            }
+
+            GameManager.Instance.ChangeState(RenkYolu.Core.GameState.Walking);
+
+            if (gameFlowUI != null)
+            {
+                gameFlowUI.HideConfirmButton();
             }
 
             Debug.Log($"Path Confirmed | Tile Count: {selectedPath.Count}");
