@@ -39,7 +39,7 @@ MonoBehaviour:
     operationType: 3
     operationValue: -5
     isWalkable: 1
-    specialType: 1
+    specialType: 0
   - x: 3
     y: 0
     colorType: 0

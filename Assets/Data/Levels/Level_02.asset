@@ -95,7 +95,7 @@ MonoBehaviour:
     operationType: 2
     operationValue: 10
     isWalkable: 1
-    specialType: 1
+    specialType: 0
   - x: 3
     y: 2
     colorType: 5
