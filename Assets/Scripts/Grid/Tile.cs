@@ -16,6 +16,8 @@ namespace RenkYolu.Grid
         [SerializeField] private TMP_Text operationText;
         [SerializeField] private GameObject selectionBorder;
         [SerializeField] private Color wallColor = new Color(0.12f, 0.12f, 0.12f);
+        [SerializeField] private Color blockedFeedbackColor = new Color(0.6f, 0.05f, 0.05f);
+        [SerializeField] private float blockedFeedbackDuration = 0.08f;
 
         private Color originalColor;
         private bool isSelected;
@@ -421,6 +423,42 @@ namespace RenkYolu.Grid
             }
 
             return colorData.Color;
+        }
+
+        public void PlayBlockedFeedback()
+        {
+            if (spriteRenderer == null)
+            {
+                return;
+            }
+
+            if (colorAnimationCoroutine != null)
+            {
+                StopCoroutine(colorAnimationCoroutine);
+                colorAnimationCoroutine = null;
+            }
+
+            spriteRenderer.DOKill();
+
+            Color baseColor = GetCurrentTargetColor();
+
+            Sequence blockedSequence = DOTween.Sequence();
+
+            blockedSequence.Append(
+                spriteRenderer.DOColor(blockedFeedbackColor, blockedFeedbackDuration)
+                    .SetEase(Ease.OutQuad)
+            );
+
+            blockedSequence.Append(
+                spriteRenderer.DOColor(baseColor, blockedFeedbackDuration)
+                    .SetEase(Ease.InQuad)
+            );
+
+            blockedSequence.OnComplete(() =>
+            {
+                spriteRenderer.color = baseColor;
+                originalColor = baseColor;
+            });
         }
 
         public void PlayGlow()

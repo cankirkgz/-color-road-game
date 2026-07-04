@@ -82,6 +82,12 @@ namespace RenkYolu.InputSystem
                 return;
             }
 
+            if (IsBlockedTile(startTile))
+            {
+                ShowInvalidTileFeedback(startTile, "Cannot start path from blocked tile");
+                return;
+            }
+
             if (selectedPath.Count == 0)
             {
                 bool isBottomLeftStartTile =
@@ -196,15 +202,30 @@ namespace RenkYolu.InputSystem
         {
             Tile lastTile = selectedPath[selectedPath.Count - 1];
 
+            if (tile == null)
+            {
+                return;
+            }
+
+            if (tile.IsWall)
+            {
+                ShowInvalidTileFeedback(tile, "Blocked tile");
+                return;
+            }
+
             if (!tile.IsWalkable)
             {
-                Debug.LogWarning($"Invalid Move | Tile is not walkable | X: {tile.X}, Y: {tile.Y}");
+                ShowInvalidTileFeedback(tile, "Tile is not walkable");
                 return;
             }
 
             if (!AreAdjacent(lastTile, tile))
             {
-                Debug.LogWarning($"Invalid Move | Tiles are not adjacent | From: X{lastTile.X}, Y{lastTile.Y} To: X{tile.X}, Y{tile.Y}");
+                Debug.LogWarning(
+                    $"Invalid Move | Tiles are not adjacent | " +
+                    $"From: X{lastTile.X}, Y{lastTile.Y} To: X{tile.X}, Y{tile.Y}"
+                );
+
                 return;
             }
 
@@ -236,6 +257,12 @@ namespace RenkYolu.InputSystem
         {
             if (tile == null || selectedPath.Contains(tile))
             {
+                return;
+            }
+
+            if (IsBlockedTile(tile))
+            {
+                ShowInvalidTileFeedback(tile, "Cannot add blocked tile to path");
                 return;
             }
 
@@ -330,6 +357,32 @@ namespace RenkYolu.InputSystem
             }
 
             return firstTile.IsNeighbour(secondTile);
+        }
+
+        private bool IsBlockedTile(Tile tile)
+        {
+            if (tile == null)
+            {
+                return true;
+            }
+
+            return tile.IsWall || !tile.IsWalkable;
+        }
+
+        private void ShowInvalidTileFeedback(Tile tile, string reason)
+        {
+            if (tile == null)
+            {
+                return;
+            }
+
+            Debug.LogWarning(
+                $"Invalid Move | {reason} | " +
+                $"X: {tile.X}, Y: {tile.Y}, " +
+                $"SpecialType: {tile.SpecialType}, IsWall: {tile.IsWall}, IsWalkable: {tile.IsWalkable}"
+            );
+
+            tile.PlayBlockedFeedback();
         }
 
         public void ConfirmPath()
