@@ -31,8 +31,8 @@ MonoBehaviour:
     colorType: 1
     operationType: 1
     operationValue: 5
-    isWalkable: 1
-    specialType: 0
+    isWalkable: 0
+    specialType: 1
   - x: 2
     y: 0
     colorType: 2

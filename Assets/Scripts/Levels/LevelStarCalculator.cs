@@ -41,10 +41,8 @@ namespace RenkYolu.Levels
                 return 0;
             }
 
-            // Oyunun şu anki kuralı:
-            // Kullanıcı sol alt köşeden başlar.
-            int startX = 0;
-            int startY = 0;
+            int startX = levelData.StartTileX;
+            int startY = levelData.StartTileY;
 
             LevelTileData startTile = levelData.GetTileDataAt(startX, startY);
 
@@ -54,9 +52,14 @@ namespace RenkYolu.Levels
                 return 0;
             }
 
-            if (!startTile.IsWalkable)
+            if (!CanUseTile(startTile))
             {
-                Debug.LogWarning($"Max score could not be calculated. Start tile is not walkable at X:{startX}, Y:{startY}");
+                Debug.LogError(
+                    $"Max score could not be calculated. Start tile is blocked | " +
+                    $"X:{startX}, Y:{startY}, " +
+                    $"IsWalkable:{startTile.IsWalkable}, SpecialType:{startTile.SpecialType}"
+                );
+
                 return 0;
             }
 
@@ -129,6 +132,7 @@ namespace RenkYolu.Levels
 
             bool isSuccessfulFinish =
                 canFinishHere &&
+                CanUseTile(currentTile) &&
                 currentTile.ColorType == startTile.ColorType;
 
             if (isSuccessfulFinish && scoreAfterCurrentTile > maxScore)
@@ -222,12 +226,7 @@ namespace RenkYolu.Levels
 
             LevelTileData targetTile = levelData.GetTileDataAt(targetX, targetY);
 
-            if (targetTile == null)
-            {
-                return;
-            }
-
-            if (!targetTile.IsWalkable)
+            if (!CanUseTile(targetTile))
             {
                 return;
             }
@@ -252,12 +251,42 @@ namespace RenkYolu.Levels
                    y < levelData.GridHeight;
         }
 
+        private static bool CanUseTile(LevelTileData tile)
+        {
+            if (tile == null)
+            {
+                return false;
+            }
+
+            if (!tile.IsWalkable)
+            {
+                return false;
+            }
+
+            if (tile.SpecialType == TileSpecialType.Wall)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private static int ApplyTileScore(
             int currentScore,
             LevelTileData tile,
             LevelTileData startTile
         )
         {
+            if (!CanUseTile(tile))
+            {
+                Debug.LogWarning(
+                    $"Score calculation skipped blocked tile | " +
+                    $"X:{tile?.X}, Y:{tile?.Y}, SpecialType:{tile?.SpecialType}"
+                );
+
+                return currentScore;
+            }
+
             int updatedScore = ApplyOperation(
                 currentScore,
                 tile.OperationType,
@@ -338,7 +367,11 @@ namespace RenkYolu.Levels
             {
                 LevelTileData tile = path[i];
 
-                builder.Append($"({tile.X},{tile.Y}) {tile.OperationType} {tile.OperationValue} {tile.ColorType}");
+                builder.Append(
+                    $"({tile.X},{tile.Y}) " +
+                    $"{tile.OperationType} {tile.OperationValue} " +
+                    $"{tile.ColorType} {tile.SpecialType}"
+                );
 
                 if (i < path.Count - 1)
                 {
