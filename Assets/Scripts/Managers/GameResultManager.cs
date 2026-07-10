@@ -201,6 +201,47 @@ namespace RenkYolu.Managers
             Debug.Log($"FAIL | Reason: {reason}");
         }
 
+        public void ForceFailBySpike(string reason, Tile spikeTile)
+        {
+            lastFinishTile = spikeTile;
+            lastResultWasSuccess = false;
+
+            if (GameManager.Instance == null)
+            {
+                Debug.LogError("GameManager is missing. Cannot force fail by spike.");
+                return;
+            }
+
+            GameManager.Instance.ChangeState(GameState.LevelFailed);
+
+            int finalScore = ScoreManager.Instance != null
+                ? ScoreManager.Instance.CurrentScore
+                : 0;
+
+            Debug.Log(
+                $"FAIL | Spike Trap | " +
+                $"Reason: {reason} | " +
+                $"Spike Tile: {(spikeTile != null ? $"X:{spikeTile.X}, Y:{spikeTile.Y}, Direction:{spikeTile.SpikeDirection}" : "null")} | " +
+                $"Final Score: {finalScore}"
+            );
+
+            if (FailPopupUI.Instance != null &&
+                ScoreManager.Instance != null &&
+                ScoreManager.Instance.HasStartColor)
+            {
+                TileColorType startColor = ScoreManager.Instance.StartColor;
+                TileColorType shownFinishColor = spikeTile != null
+                    ? spikeTile.ColorType
+                    : startColor;
+
+                FailPopupUI.Instance.ShowFail(startColor, shownFinishColor, finalScore);
+            }
+            else
+            {
+                Debug.LogWarning("FailPopupUI or ScoreManager is missing. Spike fail popup cannot be shown.");
+            }
+        }
+
         public void OnNextLevelButtonClicked()
         {
             if (!lastResultWasSuccess)

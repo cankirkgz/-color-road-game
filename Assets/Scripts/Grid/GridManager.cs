@@ -209,6 +209,7 @@ namespace RenkYolu.Grid
                     int operationValue = 1;
                     bool isWalkable = true;
                     TileSpecialType specialType = TileSpecialType.None;
+                    GridDirection spikeDirection = GridDirection.None;
 
                     if (levelTileData != null)
                     {
@@ -217,6 +218,7 @@ namespace RenkYolu.Grid
                         operationValue = levelTileData.OperationValue;
                         isWalkable = levelTileData.IsWalkable;
                         specialType = levelTileData.SpecialType;
+                        spikeDirection = levelTileData.SpikeDirection;
                     }
                     else
                     {
@@ -246,7 +248,8 @@ namespace RenkYolu.Grid
                         operationType,
                         operationValue,
                         isWalkable,
-                        specialType
+                        specialType,
+                        spikeDirection
                     );
 
                     tiles[x, y] = tile;

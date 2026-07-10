@@ -19,6 +19,13 @@ namespace RenkYolu.Grid
         [SerializeField] private Color blockedFeedbackColor = new Color(0.6f, 0.05f, 0.05f);
         [SerializeField] private float blockedFeedbackDuration = 0.08f;
 
+        [Header("Special Tile Visuals")]
+        [SerializeField] private TMP_Text spikeIconText;
+        [SerializeField] private Color spikeIconColor = new Color(1f, 0.18f, 0.18f);
+        [SerializeField] private Color spikeFlashColor = new Color(1f, 0.05f, 0.05f);
+        [SerializeField] private float spikeEffectDuration = 0.08f;
+        [SerializeField] private float spikePulseScale = 1.18f;
+
         private Color originalColor;
         private bool isSelected;
 
@@ -41,6 +48,7 @@ namespace RenkYolu.Grid
         public int OperationValue => tileData.operationValue;
         public bool IsVisible => tileData.isVisible;
         public TileSpecialType SpecialType => tileData.specialType;
+        public GridDirection SpikeDirection => tileData.spikeDirection;
         public bool IsWall => SpecialType == TileSpecialType.Wall;
         public bool IsSpike => SpecialType == TileSpecialType.Spike;
         public bool IsWalkable => tileData.isWalkable && !IsWall;
@@ -66,12 +74,17 @@ namespace RenkYolu.Grid
                 operationValue,
                 true,
                 true,
-                TileSpecialType.None
+                TileSpecialType.None,
+                GridDirection.None
             );
 
             if (IsWall)
             {
                 ApplyWallVisuals();
+            }
+            else if (IsSpike)
+            {
+                ApplySpikeVisuals();
             }
             else
             {
@@ -79,6 +92,8 @@ namespace RenkYolu.Grid
                 ApplyOperationText();
 
                 originalColor = spriteRenderer.color;
+
+                HideSpecialIcons();
             }
 
             isSelected = false;
@@ -101,7 +116,8 @@ namespace RenkYolu.Grid
             TileOperationType newOperationType,
             int newOperationValue,
             bool walkable,
-            TileSpecialType newSpecialType
+            TileSpecialType newSpecialType,
+            GridDirection newSpikeDirection
         )
         {
             tileData = new TileData(
@@ -113,12 +129,17 @@ namespace RenkYolu.Grid
                 newOperationValue,
                 true,
                 walkable,
-                newSpecialType
+                newSpecialType,
+                newSpikeDirection
             );
 
             if (IsWall)
             {
                 ApplyWallVisuals();
+            }
+            else if (IsSpike)
+            {
+                ApplySpikeVisuals();
             }
             else
             {
@@ -126,6 +147,8 @@ namespace RenkYolu.Grid
                 ApplyOperationText();
 
                 originalColor = spriteRenderer.color;
+
+                HideSpecialIcons();
             }
 
             isSelected = false;
@@ -143,7 +166,8 @@ namespace RenkYolu.Grid
                 $"Color: {ColorType}, Operation: {OperationType}, " +
                 $"Value: {OperationValue}, Visible: {IsVisible}, " +
                 $"Walkable: {IsWalkable}, SpecialType: {SpecialType}, " +
-                $"IsWall: {IsWall}, IsSpike: {IsSpike}"
+                $"IsWall: {IsWall}, IsSpike: {IsSpike}, " +
+                $"SpikeDirection: {SpikeDirection}"
             );
         }
 
@@ -236,6 +260,15 @@ namespace RenkYolu.Grid
                 return;
             }
 
+            if (IsSpike)
+            {
+                ApplySpikeVisuals();
+                Debug.Log($"Spike Tile Reveal Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {SpikeDirection}");
+                return;
+            }
+
+            HideSpecialIcons();
+
             ApplyOperationText();
 
             if (operationText != null)
@@ -275,6 +308,15 @@ namespace RenkYolu.Grid
                 return;
             }
 
+            if (IsSpike)
+            {
+                ApplySpikeVisuals();
+                Debug.Log($"Spike Tile Hide Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {SpikeDirection}");
+                return;
+            }
+
+            HideSpecialIcons();
+
             if (operationText != null)
             {
                 if (textAnimationCoroutine != null)
@@ -312,6 +354,66 @@ namespace RenkYolu.Grid
             if (selectionBorder != null)
             {
                 selectionBorder.SetActive(false);
+            }
+
+            HideSpecialIcons();
+        }
+
+        private void ApplySpikeVisuals()
+        {
+            if (spikeIconText == null)
+            {
+                Debug.LogWarning($"SpikeIconText reference is missing on Tile | ID: {TileId}, X: {X}, Y: {Y}");
+                return;
+            }
+
+            spikeIconText.gameObject.SetActive(true);
+            spikeIconText.text = GetSpikeDirectionIcon();
+            spikeIconText.color = spikeIconColor;
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = new Color(0.18f, 0.18f, 0.18f);
+                originalColor = spriteRenderer.color;
+            }
+
+            if (operationText != null)
+            {
+                operationText.gameObject.SetActive(false);
+            }
+
+            Debug.Log(
+                $"Spike Visual Applied | ID: {TileId}, X: {X}, Y: {Y}, " +
+                $"Direction: {SpikeDirection}, Icon: {spikeIconText.text}"
+            );
+        }
+
+        private string GetSpikeDirectionIcon()
+        {
+            switch (SpikeDirection)
+            {
+                case GridDirection.Up:
+                    return "^";
+
+                case GridDirection.Down:
+                    return "v";
+
+                case GridDirection.Left:
+                    return "<";
+
+                case GridDirection.Right:
+                    return ">";
+
+                default:
+                    return "?";
+            }
+        }
+
+        private void HideSpecialIcons()
+        {
+            if (spikeIconText != null)
+            {
+                spikeIconText.gameObject.SetActive(false);
             }
         }
 
@@ -500,6 +602,72 @@ namespace RenkYolu.Grid
             });
         }
 
+        public void PlaySpikeEffect()
+        {
+            if (!IsSpike)
+            {
+                return;
+            }
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.DOKill();
+
+                Color baseColor = GetCurrentTargetColor();
+                Sequence colorSequence = DOTween.Sequence();
+
+                colorSequence.Append(
+                    spriteRenderer.DOColor(spikeFlashColor, spikeEffectDuration)
+                        .SetEase(Ease.OutQuad)
+                );
+                colorSequence.Append(
+                    spriteRenderer.DOColor(baseColor, spikeEffectDuration)
+                        .SetEase(Ease.InQuad)
+                );
+                colorSequence.OnComplete(() =>
+                {
+                    spriteRenderer.color = baseColor;
+                    originalColor = baseColor;
+                });
+            }
+
+            if (spikeIconText != null)
+            {
+                spikeIconText.transform.DOKill();
+
+                Vector3 originalScale = Vector3.one;
+                spikeIconText.transform.localScale = originalScale;
+
+                Sequence iconSequence = DOTween.Sequence();
+
+                iconSequence.Append(
+                    spikeIconText.transform.DOScale(originalScale * spikePulseScale, spikeEffectDuration)
+                        .SetEase(Ease.OutBack)
+                );
+                iconSequence.Append(
+                    spikeIconText.transform.DOScale(originalScale, spikeEffectDuration)
+                        .SetEase(Ease.InBack)
+                );
+            }
+
+            transform.DOKill();
+
+            Vector3 tileOriginalScale = transform.localScale;
+            Vector3 targetScale = tileOriginalScale * 1.04f;
+            Sequence tileSequence = DOTween.Sequence();
+
+            tileSequence.Append(
+                transform.DOScale(targetScale, spikeEffectDuration)
+                    .SetEase(Ease.OutQuad)
+            );
+            tileSequence.Append(
+                transform.DOScale(tileOriginalScale, spikeEffectDuration)
+                    .SetEase(Ease.InQuad)
+            );
+
+            Debug.Log($"Spike Effect Played | X:{X}, Y:{Y}, Direction:{SpikeDirection}");
+        }
+
         private Color GetCurrentTargetColor()
         {
             if (tileData == null)
@@ -510,6 +678,11 @@ namespace RenkYolu.Grid
             if (IsWall)
             {
                 return wallColor;
+            }
+
+            if (IsSpike)
+            {
+                return new Color(0.18f, 0.18f, 0.18f);
             }
 
             if (tileData.isVisible)

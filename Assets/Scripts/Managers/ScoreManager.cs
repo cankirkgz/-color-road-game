@@ -122,6 +122,15 @@ namespace RenkYolu.Managers
                 return;
             }
 
+            if (tile.IsSpike)
+            {
+                Debug.Log(
+                    $"Score operation skipped. Spike tile has no score operation | " +
+                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y} | Direction:{tile.SpikeDirection}"
+                );
+                return;
+            }
+
             int oldScore = currentScore;
 
             currentScore = TileOperationCalculator.ApplyOperation(
@@ -145,6 +154,18 @@ namespace RenkYolu.Managers
             if (tile == null)
             {
                 Debug.LogWarning("Combo update skipped. Tile is null.");
+                return 0;
+            }
+
+            if (tile.IsSpike)
+            {
+                comboCounter = 0;
+
+                Debug.Log(
+                    $"Combo reset. Spike tile does not continue combo | " +
+                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y}"
+                );
+
                 return 0;
             }
 
@@ -185,6 +206,15 @@ namespace RenkYolu.Managers
             if (tile == null)
             {
                 Debug.LogWarning("Color bonus skipped. Tile is null.");
+                return false;
+            }
+
+            if (tile.IsSpike)
+            {
+                Debug.Log(
+                    $"Color bonus skipped. Spike tile has no color bonus | " +
+                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y}"
+                );
                 return false;
             }
 
@@ -269,6 +299,36 @@ namespace RenkYolu.Managers
             comboCounter = 0;
 
             Debug.Log("Combo Reset");
+        }
+
+        public void ResetComboBecauseOfSpike(Tile spikeTile)
+        {
+            comboCounter = 0;
+
+            if (spikeTile == null)
+            {
+                Debug.Log("Combo Reset | Reason: Spike tile");
+                return;
+            }
+
+            Debug.Log(
+                $"Combo Reset | Reason: Spike tile | " +
+                $"Tile ID: {spikeTile.TileId} | X:{spikeTile.X}, Y:{spikeTile.Y} | " +
+                $"Direction:{spikeTile.SpikeDirection}"
+            );
+        }
+
+        public void AddShortcutBonus(int bonusAmount, string reason)
+        {
+            int oldScore = currentScore;
+            currentScore += bonusAmount;
+
+            Debug.Log(
+                $"Shortcut Bonus Applied | " +
+                $"Reason: {reason} | " +
+                $"Bonus: +{bonusAmount} | " +
+                $"Score: {oldScore} -> {currentScore}"
+            );
         }
 
         public int GetBestScoreForLevel(int levelId)

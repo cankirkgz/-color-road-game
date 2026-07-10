@@ -8,6 +8,7 @@ namespace RenkYolu.Levels
     public static class LevelStarCalculator
     {
         private const int ColorBonusMultiplier = 2;
+        private const int SpikeShortcutBonus = 50;
 
         public static int CalculateStars(LevelData levelData, int playerScore)
         {
@@ -60,6 +61,12 @@ namespace RenkYolu.Levels
                     $"IsWalkable:{startTile.IsWalkable}, SpecialType:{startTile.SpecialType}"
                 );
 
+                return 0;
+            }
+
+            if (startTile.SpecialType == TileSpecialType.Spike)
+            {
+                Debug.LogError($"Max score could not be calculated. Start tile cannot be spike | X:{startX}, Y:{startY}");
                 return 0;
             }
 
@@ -133,6 +140,7 @@ namespace RenkYolu.Levels
             bool isSuccessfulFinish =
                 canFinishHere &&
                 CanUseTile(currentTile) &&
+                currentTile.SpecialType != TileSpecialType.Spike &&
                 currentTile.ColorType == startTile.ColorType;
 
             if (isSuccessfulFinish && scoreAfterCurrentTile > maxScore)
@@ -148,6 +156,24 @@ namespace RenkYolu.Levels
                     $"Score: {maxScore} | " +
                     $"Path: {BuildPathText(bestPath)}"
                 );
+            }
+
+            if (currentTile.SpecialType == TileSpecialType.Spike)
+            {
+                TryResolveSpikeBranch(
+                    levelData,
+                    currentTile,
+                    startTile,
+                    scoreAfterCurrentTile,
+                    visited,
+                    currentPath,
+                    bestPath,
+                    ref maxScore
+                );
+
+                currentPath.RemoveAt(currentPath.Count - 1);
+                visited[currentTile.X, currentTile.Y] = false;
+                return;
             }
 
             TryMoveToNeighbour(
@@ -241,6 +267,213 @@ namespace RenkYolu.Levels
                 bestPath,
                 ref maxScore
             );
+        }
+
+        private static void TryResolveSpikeBranch(
+            LevelData levelData,
+            LevelTileData spikeTile,
+            LevelTileData startTile,
+            int currentScore,
+            bool[,] visited,
+            List<LevelTileData> currentPath,
+            List<LevelTileData> bestPath,
+            ref int maxScore
+        )
+        {
+            LevelTileData pushTarget = GetSpikePushTarget(levelData, spikeTile);
+
+            if (!CanUseTile(pushTarget) || visited[pushTarget.X, pushTarget.Y])
+            {
+                return;
+            }
+
+            // The drawn path may end on the spike. In that case the forced
+            // landing tile is the real finish tile and still earns its score.
+            int scoreAfterFinalLanding = ApplyTileScore(
+                currentScore,
+                pushTarget,
+                startTile
+            );
+
+            bool finalLandingCanFinish =
+                pushTarget.ColorType == startTile.ColorType &&
+                pushTarget.SpecialType != TileSpecialType.Spike;
+
+            if (finalLandingCanFinish && scoreAfterFinalLanding > maxScore)
+            {
+                maxScore = scoreAfterFinalLanding;
+
+                bestPath.Clear();
+                bestPath.AddRange(currentPath);
+                bestPath.Add(pushTarget);
+
+                Debug.Log(
+                    $"New Max Score Candidate From Spike Final Landing | " +
+                    $"Spike X:{spikeTile.X}, Y:{spikeTile.Y}, Direction:{spikeTile.SpikeDirection} | " +
+                    $"Landing X:{pushTarget.X}, Y:{pushTarget.Y} | " +
+                    $"Score:{maxScore} | " +
+                    $"Path:{BuildPathText(bestPath)}"
+                );
+            }
+
+            SearchSpikeSegment(
+                levelData,
+                spikeTile,
+                pushTarget,
+                startTile,
+                currentScore,
+                visited,
+                currentPath,
+                new List<LevelTileData>(),
+                bestPath,
+                ref maxScore
+            );
+        }
+
+        private static void SearchSpikeSegment(
+            LevelData levelData,
+            LevelTileData currentTile,
+            LevelTileData pushTarget,
+            LevelTileData startTile,
+            int currentScore,
+            bool[,] visited,
+            List<LevelTileData> currentPath,
+            List<LevelTileData> segment,
+            List<LevelTileData> bestPath,
+            ref int maxScore
+        )
+        {
+            List<LevelTileData> neighbours = GetUsableUnvisitedNeighbours(levelData, currentTile, visited);
+
+            for (int i = 0; i < neighbours.Count; i++)
+            {
+                LevelTileData nextTile = neighbours[i];
+
+                if (IsSameTile(nextTile, pushTarget))
+                {
+                    int scoreAfterSkippedTiles = currentScore;
+
+                    for (int j = 0; j < segment.Count; j++)
+                    {
+                        scoreAfterSkippedTiles = ApplyTileScore(scoreAfterSkippedTiles, segment[j], startTile);
+                    }
+
+                    if (segment.Count > 0)
+                    {
+                        scoreAfterSkippedTiles += SpikeShortcutBonus;
+                    }
+
+                    SearchBestPath(
+                        levelData,
+                        pushTarget,
+                        startTile,
+                        scoreAfterSkippedTiles,
+                        visited,
+                        currentPath,
+                        bestPath,
+                        ref maxScore
+                    );
+
+                    continue;
+                }
+
+                visited[nextTile.X, nextTile.Y] = true;
+                currentPath.Add(nextTile);
+                segment.Add(nextTile);
+
+                SearchSpikeSegment(
+                    levelData,
+                    nextTile,
+                    pushTarget,
+                    startTile,
+                    currentScore,
+                    visited,
+                    currentPath,
+                    segment,
+                    bestPath,
+                    ref maxScore
+                );
+
+                segment.RemoveAt(segment.Count - 1);
+                currentPath.RemoveAt(currentPath.Count - 1);
+                visited[nextTile.X, nextTile.Y] = false;
+            }
+        }
+
+        private static List<LevelTileData> GetUsableUnvisitedNeighbours(
+            LevelData levelData,
+            LevelTileData tile,
+            bool[,] visited
+        )
+        {
+            List<LevelTileData> neighbours = new List<LevelTileData>();
+            AddNeighbourIfUsable(levelData, tile.X + 1, tile.Y, visited, neighbours);
+            AddNeighbourIfUsable(levelData, tile.X - 1, tile.Y, visited, neighbours);
+            AddNeighbourIfUsable(levelData, tile.X, tile.Y + 1, visited, neighbours);
+            AddNeighbourIfUsable(levelData, tile.X, tile.Y - 1, visited, neighbours);
+            return neighbours;
+        }
+
+        private static void AddNeighbourIfUsable(
+            LevelData levelData,
+            int x,
+            int y,
+            bool[,] visited,
+            List<LevelTileData> neighbours
+        )
+        {
+            if (!IsInsideGrid(levelData, x, y) || visited[x, y])
+            {
+                return;
+            }
+
+            LevelTileData tile = levelData.GetTileDataAt(x, y);
+
+            if (CanUseTile(tile))
+            {
+                neighbours.Add(tile);
+            }
+        }
+
+        private static LevelTileData GetSpikePushTarget(LevelData levelData, LevelTileData spikeTile)
+        {
+            if (levelData == null || spikeTile == null)
+            {
+                return null;
+            }
+
+            int targetX = spikeTile.X;
+            int targetY = spikeTile.Y;
+
+            switch (spikeTile.SpikeDirection)
+            {
+                case GridDirection.Up:
+                    targetY++;
+                    break;
+                case GridDirection.Down:
+                    targetY--;
+                    break;
+                case GridDirection.Left:
+                    targetX--;
+                    break;
+                case GridDirection.Right:
+                    targetX++;
+                    break;
+                default:
+                    return null;
+            }
+
+            return IsInsideGrid(levelData, targetX, targetY)
+                ? levelData.GetTileDataAt(targetX, targetY)
+                : null;
+        }
+
+        private static bool IsSameTile(LevelTileData firstTile, LevelTileData secondTile)
+        {
+            return firstTile != null &&
+                   secondTile != null &&
+                   firstTile.X == secondTile.X &&
+                   firstTile.Y == secondTile.Y;
         }
 
         private static bool IsInsideGrid(LevelData levelData, int x, int y)
@@ -372,6 +605,11 @@ namespace RenkYolu.Levels
                     $"{tile.OperationType} {tile.OperationValue} " +
                     $"{tile.ColorType} {tile.SpecialType}"
                 );
+
+                if (tile.SpecialType == TileSpecialType.Spike)
+                {
+                    builder.Append($" {tile.SpikeDirection}");
+                }
 
                 if (i < path.Count - 1)
                 {
