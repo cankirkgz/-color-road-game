@@ -3745,9 +3745,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RenkYolu.Levels.LevelLoader
   gridManager: {fileID: 1057543997}
-  startingLevel: {fileID: 11400000, guid: 84fe81d4d1d0146158e601b880c55511, type: 2}
+  startingLevel: {fileID: 11400000, guid: 810cfe2a3e6dffc4f8ca33bf648dec55, type: 2}
   levels:
-  - {fileID: 11400000, guid: 84fe81d4d1d0146158e601b880c55511, type: 2}
+  - {fileID: 11400000, guid: 810cfe2a3e6dffc4f8ca33bf648dec55, type: 2}
   - {fileID: 11400000, guid: d1f334088a4d2cc4ca10d71c96910873, type: 2}
   - {fileID: 11400000, guid: c774d917b061aec4d8f5d2559cd41508, type: 2}
   - {fileID: 11400000, guid: 019587d43df4df449a52e661bd998722, type: 2}

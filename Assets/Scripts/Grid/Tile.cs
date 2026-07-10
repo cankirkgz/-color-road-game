@@ -42,6 +42,7 @@ namespace RenkYolu.Grid
         public bool IsVisible => tileData.isVisible;
         public TileSpecialType SpecialType => tileData.specialType;
         public bool IsWall => SpecialType == TileSpecialType.Wall;
+        public bool IsSpike => SpecialType == TileSpecialType.Spike;
         public bool IsWalkable => tileData.isWalkable && !IsWall;
         public bool IsSelected => isSelected;
 
@@ -141,7 +142,8 @@ namespace RenkYolu.Grid
                 $"ID: {TileId}, X: {X}, Y: {Y}, " +
                 $"Color: {ColorType}, Operation: {OperationType}, " +
                 $"Value: {OperationValue}, Visible: {IsVisible}, " +
-                $"Walkable: {IsWalkable}, SpecialType: {SpecialType}, IsWall: {IsWall}"
+                $"Walkable: {IsWalkable}, SpecialType: {SpecialType}, " +
+                $"IsWall: {IsWall}, IsSpike: {IsSpike}"
             );
         }
 
