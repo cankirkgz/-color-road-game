@@ -72,7 +72,13 @@ namespace RenkYolu.Managers
             TileColorType startColor = ScoreManager.Instance.StartColor;
             TileColorType finishColor = finishTile.ColorType;
 
-            bool isSuccess = finishColor == startColor;
+            bool isValidFinish =
+                !finishTile.IsWall &&
+                !finishTile.IsLauncher &&
+                !finishTile.IsSpike &&
+                finishTile.IsWalkable;
+
+            bool isSuccess = isValidFinish && finishColor == startColor;
 
             if (logResultDetails)
             {
@@ -81,6 +87,8 @@ namespace RenkYolu.Managers
                     $"Start Color: {startColor} | " +
                     $"Finish Tile ID: {finishTile.TileId} | " +
                     $"Finish Color: {finishColor} | " +
+                    $"SpecialType: {finishTile.SpecialType} | " +
+                    $"Valid Finish: {isValidFinish} | " +
                     $"Current Score: {ScoreManager.Instance.CurrentScore}"
                 );
             }
@@ -201,14 +209,14 @@ namespace RenkYolu.Managers
             Debug.Log($"FAIL | Reason: {reason}");
         }
 
-        public void ForceFailBySpike(string reason, Tile spikeTile)
+        public void ForceFailByLauncher(string reason, Tile launcherTile)
         {
-            lastFinishTile = spikeTile;
+            lastFinishTile = launcherTile;
             lastResultWasSuccess = false;
 
             if (GameManager.Instance == null)
             {
-                Debug.LogError("GameManager is missing. Cannot force fail by spike.");
+                Debug.LogError("GameManager is missing. Cannot force fail by launcher.");
                 return;
             }
 
@@ -219,9 +227,9 @@ namespace RenkYolu.Managers
                 : 0;
 
             Debug.Log(
-                $"FAIL | Spike Trap | " +
+                $"FAIL | Launcher | " +
                 $"Reason: {reason} | " +
-                $"Spike Tile: {(spikeTile != null ? $"X:{spikeTile.X}, Y:{spikeTile.Y}, Direction:{spikeTile.SpikeDirection}" : "null")} | " +
+                $"Launcher Tile: {(launcherTile != null ? $"X:{launcherTile.X}, Y:{launcherTile.Y}, Direction:{launcherTile.LauncherDirection}" : "null")} | " +
                 $"Final Score: {finalScore}"
             );
 
@@ -230,15 +238,15 @@ namespace RenkYolu.Managers
                 ScoreManager.Instance.HasStartColor)
             {
                 TileColorType startColor = ScoreManager.Instance.StartColor;
-                TileColorType shownFinishColor = spikeTile != null
-                    ? spikeTile.ColorType
+                TileColorType shownFinishColor = launcherTile != null
+                    ? launcherTile.ColorType
                     : startColor;
 
                 FailPopupUI.Instance.ShowFail(startColor, shownFinishColor, finalScore);
             }
             else
             {
-                Debug.LogWarning("FailPopupUI or ScoreManager is missing. Spike fail popup cannot be shown.");
+                Debug.LogWarning("FailPopupUI or ScoreManager is missing. Launcher fail popup cannot be shown.");
             }
         }
 

@@ -73,6 +73,7 @@
     <Compile Include="Assets\Scripts\Grid\TileOperationType.cs" />
     <Compile Include="Assets\Scripts\Grid\GridDirection.cs" />
     <Compile Include="Assets\Scripts\UI\FloatingTextSpawner.cs" />
+    <Compile Include="Assets\Scripts\Core\GameBalance.cs" />
     <Compile Include="Assets\Scripts\Levels\LevelLoader.cs" />
     <Compile Include="Assets\Scripts\Levels\LevelStarCalculator.cs" />
     <Compile Include="Assets\Scripts\Grid\GridManager.cs" />

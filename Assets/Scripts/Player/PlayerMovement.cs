@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using RenkYolu.Grid;
 using UnityEngine;
+using UnityEngine.Serialization;
 using DG.Tweening;
+using RenkYolu.Core;
 using RenkYolu.Managers;
 using RenkYolu.UI;
 
@@ -15,9 +17,9 @@ namespace RenkYolu.Player
         [SerializeField] private float moveDuration = 0.25f;
         [SerializeField] private float zPosition = 0f;
 
-        [Header("Spike Push Settings")]
-        [SerializeField] private int spikeShortcutBonus = 50;
-        [SerializeField] private float spikeFallDistance = 1f;
+        [Header("Launcher Push Settings")]
+        [FormerlySerializedAs("spikeFallDistance")]
+        [SerializeField] private float launcherFallDistance = 1f;
 
         [Header("Animation Settings")]
         [SerializeField] private float squashAmount = 0.15f;
@@ -98,21 +100,21 @@ namespace RenkYolu.Player
                 yield return MoveToTile(targetTile);
                 actualFinishTile = targetTile;
 
-                if (targetTile.IsSpike)
+                if (targetTile.IsLauncher)
                 {
-                    if (!TryGetSpikePushTarget(targetTile, out Tile pushTarget))
+                    if (!TryGetLauncherPushTarget(targetTile, out Tile pushTarget))
                     {
-                        Vector3 fallPosition = GetSpikeFallPosition(targetTile);
+                        Vector3 fallPosition = GetLauncherFallPosition(targetTile);
 
                         Debug.LogWarning(
-                            $"Spike pushed player outside grid | " +
-                            $"Spike X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.SpikeDirection}"
+                            $"Launcher pushed player outside grid | " +
+                            $"Launcher X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.LauncherDirection}"
                         );
 
                         yield return MoveToPositionOnly(fallPosition);
 
-                        StopMovementBecauseOfSpikeFail(
-                            "Spike pushed player outside the grid.",
+                        StopMovementBecauseOfLauncherFail(
+                            "Launcher pushed player outside the grid.",
                             targetTile
                         );
                         yield break;
@@ -122,8 +124,8 @@ namespace RenkYolu.Player
                     {
                         yield return MoveToPositionOnly(pushTarget.transform.position);
 
-                        StopMovementBecauseOfSpikeFail(
-                            "Spike pushed player into blocked tile.",
+                        StopMovementBecauseOfLauncherFail(
+                            "Launcher pushed player into blocked tile.",
                             targetTile
                         );
                         yield break;
@@ -133,13 +135,13 @@ namespace RenkYolu.Player
 
                     if (pushTargetIndex < 0)
                     {
-                        bool spikeIsLastDrawnTile = i == path.Count - 1;
+                        bool launcherIsLastDrawnTile = i == path.Count - 1;
 
-                        if (spikeIsLastDrawnTile)
+                        if (launcherIsLastDrawnTile)
                         {
                             Debug.Log(
-                                $"Spike Final Push | " +
-                                $"Spike X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.SpikeDirection} | " +
+                                $"Launcher Final Push | " +
+                                $"Launcher X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.LauncherDirection} | " +
                                 $"Final Landing X:{pushTarget.X}, Y:{pushTarget.Y}"
                             );
 
@@ -150,15 +152,15 @@ namespace RenkYolu.Player
                         }
 
                         Debug.LogWarning(
-                            $"Spike pushed player to a tile that is not in the drawn path | " +
-                            $"Spike X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.SpikeDirection} | " +
+                            $"Launcher pushed player to a tile that is not in the drawn path | " +
+                            $"Launcher X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.LauncherDirection} | " +
                             $"Push Target X:{pushTarget.X}, Y:{pushTarget.Y}"
                         );
 
                         yield return MoveToPositionOnly(pushTarget.transform.position);
 
-                        StopMovementBecauseOfSpikeFail(
-                            "Spike target tile was not included in the drawn path.",
+                        StopMovementBecauseOfLauncherFail(
+                            "Launcher target tile was not included in the drawn path.",
                             targetTile
                         );
                         yield break;
@@ -171,8 +173,8 @@ namespace RenkYolu.Player
                     if (skippedTileCount > 0)
                     {
                         Debug.Log(
-                            $"Spike Shortcut Detected | " +
-                            $"Spike Index:{i} | " +
+                            $"Launcher Shortcut Detected | " +
+                            $"Launcher Index:{i} | " +
                             $"Push Target Index:{pushTargetIndex} | " +
                             $"Skipped Start:{skippedStartIndex} | " +
                             $"Skipped End:{skippedEndIndex} | " +
@@ -186,13 +188,13 @@ namespace RenkYolu.Player
                             int scoreBeforeBonus = ScoreManager.Instance.CurrentScore;
 
                             ScoreManager.Instance.AddShortcutBonus(
-                                spikeShortcutBonus,
-                                $"Spike shortcut skipped {skippedTileCount} tile(s)"
+                                GameBalance.LauncherShortcutBonus,
+                                $"Launcher shortcut skipped {skippedTileCount} tile(s)"
                             );
 
                             Debug.Log(
-                                $"Spike Shortcut Bonus Confirmed | " +
-                                $"Bonus:+{spikeShortcutBonus} | " +
+                                $"Launcher Shortcut Bonus Confirmed | " +
+                                $"Bonus:+{GameBalance.LauncherShortcutBonus} | " +
                                 $"Score:{scoreBeforeBonus} -> {ScoreManager.Instance.CurrentScore}"
                             );
                         }
@@ -202,23 +204,23 @@ namespace RenkYolu.Player
                         }
 
                         Debug.Log(
-                            $"Spike Shortcut Used | " +
+                            $"Launcher Shortcut Used | " +
                             $"Skipped Tiles:{skippedTileCount} | " +
-                            $"Bonus:+{spikeShortcutBonus}"
+                            $"Bonus:+{GameBalance.LauncherShortcutBonus}"
                         );
                     }
                     else
                     {
                         Debug.Log(
-                            $"Spike Push Without Shortcut Bonus | " +
+                            $"Launcher Push Without Shortcut Bonus | " +
                             $"Push target is the next drawn tile. " +
-                            $"Spike Index:{i} | Push Target Index:{pushTargetIndex}"
+                            $"Launcher Index:{i} | Push Target Index:{pushTargetIndex}"
                         );
                     }
 
                     Debug.Log(
-                        $"Spike Push Started | " +
-                        $"Spike X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.SpikeDirection} | " +
+                        $"Launcher Push Started | " +
+                        $"Launcher X:{targetTile.X}, Y:{targetTile.Y}, Direction:{targetTile.LauncherDirection} | " +
                         $"Push Target X:{pushTarget.X}, Y:{pushTarget.Y} | " +
                         $"Push Target Path Index:{pushTargetIndex}"
                     );
@@ -299,11 +301,29 @@ namespace RenkYolu.Player
             tile.Deselect();
             tile.Reveal();
 
+            if (tile.IsLauncher)
+            {
+                tile.PlayLauncherEffect();
+
+                Debug.Log(
+                    $"Player reached launcher tile | " +
+                    $"X:{tile.X}, Y:{tile.Y}, Direction:{tile.LauncherDirection}. " +
+                    "Operation and color bonus skipped."
+                );
+
+                OnTileReached?.Invoke(tile);
+                yield break;
+            }
+
             if (tile.IsSpike)
             {
                 if (ScoreManager.Instance != null)
                 {
-                    ScoreManager.Instance.ResetComboBecauseOfSpike(tile);
+                    ScoreManager.Instance.ApplySpikePenalty(tile);
+                }
+                else
+                {
+                    Debug.LogWarning("ScoreManager is missing. Spike penalty cannot be applied.");
                 }
 
                 tile.PlaySpikeEffect();
@@ -311,8 +331,8 @@ namespace RenkYolu.Player
 
                 Debug.Log(
                     $"Player reached spike tile | " +
-                    $"X:{tile.X}, Y:{tile.Y}, Direction:{tile.SpikeDirection}. " +
-                    $"Score, combo, color bonus and floating operation skipped."
+                    $"X:{tile.X}, Y:{tile.Y}. " +
+                    "Spike penalty applied; operation and color bonus skipped."
                 );
 
                 OnTileReached?.Invoke(tile);
@@ -514,37 +534,37 @@ namespace RenkYolu.Player
             return true;
         }
 
-        private bool TryGetSpikePushTarget(Tile spikeTile, out Tile pushTarget)
+        private bool TryGetLauncherPushTarget(Tile launcherTile, out Tile pushTarget)
         {
             pushTarget = null;
 
-            if (spikeTile == null || !spikeTile.IsSpike)
+            if (launcherTile == null || !launcherTile.IsLauncher)
             {
                 return false;
             }
 
-            switch (spikeTile.SpikeDirection)
+            switch (launcherTile.LauncherDirection)
             {
                 case GridDirection.Up:
-                    pushTarget = spikeTile.UpNeighbour;
+                    pushTarget = launcherTile.UpNeighbour;
                     break;
 
                 case GridDirection.Down:
-                    pushTarget = spikeTile.DownNeighbour;
+                    pushTarget = launcherTile.DownNeighbour;
                     break;
 
                 case GridDirection.Left:
-                    pushTarget = spikeTile.LeftNeighbour;
+                    pushTarget = launcherTile.LeftNeighbour;
                     break;
 
                 case GridDirection.Right:
-                    pushTarget = spikeTile.RightNeighbour;
+                    pushTarget = launcherTile.RightNeighbour;
                     break;
 
                 default:
                     Debug.LogWarning(
-                        $"Spike push failed. Direction is None | " +
-                        $"X:{spikeTile.X}, Y:{spikeTile.Y}"
+                        $"Launcher push failed. Direction is None | " +
+                        $"X:{launcherTile.X}, Y:{launcherTile.Y}"
                     );
                     return false;
             }
@@ -552,8 +572,8 @@ namespace RenkYolu.Player
             if (pushTarget == null)
             {
                 Debug.LogWarning(
-                    $"Spike push failed. Target tile is outside grid | " +
-                    $"Spike X:{spikeTile.X}, Y:{spikeTile.Y}, Direction:{spikeTile.SpikeDirection}"
+                    $"Launcher push failed. Target tile is outside grid | " +
+                    $"Launcher X:{launcherTile.X}, Y:{launcherTile.Y}, Direction:{launcherTile.LauncherDirection}"
                 );
                 return false;
             }
@@ -616,15 +636,30 @@ namespace RenkYolu.Player
                     continue;
                 }
 
-                if (skippedTile.IsSpike)
+                if (skippedTile.IsLauncher)
                 {
                     Debug.LogWarning(
-                        $"Skipped score ignored for another spike tile | " +
+                        $"Skipped score ignored for another launcher tile | " +
                         $"Index:{i}, X:{skippedTile.X}, Y:{skippedTile.Y}"
                     );
 
                     skippedTile.Deselect();
                     skippedTile.Reveal();
+
+                    continue;
+                }
+
+                if (skippedTile.IsSpike)
+                {
+                    skippedTile.Deselect();
+                    skippedTile.Reveal();
+                    ScoreManager.Instance.ApplySpikePenalty(skippedTile);
+                    skippedTile.PlaySpikeEffect();
+
+                    Debug.Log(
+                        $"Skipped Spike Penalty Applied By Launcher Shortcut | " +
+                        $"Index:{i}, X:{skippedTile.X}, Y:{skippedTile.Y}"
+                    );
 
                     continue;
                 }
@@ -655,29 +690,29 @@ namespace RenkYolu.Player
                 }
 
                 Debug.Log(
-                    $"Skipped Tile Score Applied By Spike Shortcut | " +
+                    $"Skipped Tile Score Applied By Launcher Shortcut | " +
                     $"Index:{i}, X:{skippedTile.X}, Y:{skippedTile.Y}"
                 );
             }
         }
 
-        private Vector3 GetSpikeFallPosition(Tile spikeTile)
+        private Vector3 GetLauncherFallPosition(Tile launcherTile)
         {
-            Vector3 direction = GetSpikeDirectionVector(spikeTile);
-            Vector3 fallPosition = spikeTile.transform.position + direction * spikeFallDistance;
+            Vector3 direction = GetLauncherDirectionVector(launcherTile);
+            Vector3 fallPosition = launcherTile.transform.position + direction * launcherFallDistance;
             fallPosition.z = zPosition;
 
             return fallPosition;
         }
 
-        private Vector3 GetSpikeDirectionVector(Tile spikeTile)
+        private Vector3 GetLauncherDirectionVector(Tile launcherTile)
         {
-            if (spikeTile == null)
+            if (launcherTile == null)
             {
                 return Vector3.zero;
             }
 
-            switch (spikeTile.SpikeDirection)
+            switch (launcherTile.LauncherDirection)
             {
                 case GridDirection.Up:
                     return Vector3.up;
@@ -696,31 +731,29 @@ namespace RenkYolu.Player
             }
         }
 
-        private void StopMovementBecauseOfSpikeFail(string reason, Tile spikeTile)
+        private void StopMovementBecauseOfLauncherFail(string reason, Tile launcherTile)
         {
             isMoving = false;
 
             transform.DOKill();
 
-            if (spikeTile != null)
+            if (launcherTile != null)
             {
-                spikeTile.PlaySpikeEffect();
+                launcherTile.PlayLauncherEffect();
             }
-
-            PlayHitFeedback();
 
             if (GameResultManager.Instance != null)
             {
-                GameResultManager.Instance.ForceFailBySpike(reason, spikeTile);
+                GameResultManager.Instance.ForceFailByLauncher(reason, launcherTile);
             }
             else
             {
-                Debug.LogError("GameResultManager is missing. Cannot fail by spike.");
+                Debug.LogError("GameResultManager is missing. Cannot fail by launcher.");
             }
 
             OnMovementFinished?.Invoke();
 
-            Debug.LogWarning($"Player movement stopped because of spike trap | Reason: {reason}");
+            Debug.LogWarning($"Player movement stopped because of launcher failure | Reason: {reason}");
         }
 
         private void StopMovementBecauseOfInvalidPath()

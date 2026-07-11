@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using RenkYolu.Core;
 using RenkYolu.Grid;
 using UnityEngine;
 
@@ -8,7 +9,6 @@ namespace RenkYolu.Levels
     public static class LevelStarCalculator
     {
         private const int ColorBonusMultiplier = 2;
-        private const int SpikeShortcutBonus = 50;
 
         public static int CalculateStars(LevelData levelData, int playerScore)
         {
@@ -64,9 +64,10 @@ namespace RenkYolu.Levels
                 return 0;
             }
 
-            if (startTile.SpecialType == TileSpecialType.Spike)
+            if (startTile.SpecialType == TileSpecialType.Launcher ||
+                startTile.SpecialType == TileSpecialType.Spike)
             {
-                Debug.LogError($"Max score could not be calculated. Start tile cannot be spike | X:{startX}, Y:{startY}");
+                Debug.LogError($"Max score could not be calculated. Start tile cannot be Launcher or Spike | X:{startX}, Y:{startY}");
                 return 0;
             }
 
@@ -140,6 +141,7 @@ namespace RenkYolu.Levels
             bool isSuccessfulFinish =
                 canFinishHere &&
                 CanUseTile(currentTile) &&
+                currentTile.SpecialType != TileSpecialType.Launcher &&
                 currentTile.SpecialType != TileSpecialType.Spike &&
                 currentTile.ColorType == startTile.ColorType;
 
@@ -158,9 +160,9 @@ namespace RenkYolu.Levels
                 );
             }
 
-            if (currentTile.SpecialType == TileSpecialType.Spike)
+            if (currentTile.SpecialType == TileSpecialType.Launcher)
             {
-                TryResolveSpikeBranch(
+                TryResolveLauncherBranch(
                     levelData,
                     currentTile,
                     startTile,
@@ -269,9 +271,9 @@ namespace RenkYolu.Levels
             );
         }
 
-        private static void TryResolveSpikeBranch(
+        private static void TryResolveLauncherBranch(
             LevelData levelData,
-            LevelTileData spikeTile,
+            LevelTileData launcherTile,
             LevelTileData startTile,
             int currentScore,
             bool[,] visited,
@@ -280,14 +282,14 @@ namespace RenkYolu.Levels
             ref int maxScore
         )
         {
-            LevelTileData pushTarget = GetSpikePushTarget(levelData, spikeTile);
+            LevelTileData pushTarget = GetLauncherPushTarget(levelData, launcherTile);
 
             if (!CanUseTile(pushTarget) || visited[pushTarget.X, pushTarget.Y])
             {
                 return;
             }
 
-            // The drawn path may end on the spike. In that case the forced
+            // The drawn path may end on the launcher. In that case the forced
             // landing tile is the real finish tile and still earns its score.
             int scoreAfterFinalLanding = ApplyTileScore(
                 currentScore,
@@ -297,6 +299,8 @@ namespace RenkYolu.Levels
 
             bool finalLandingCanFinish =
                 pushTarget.ColorType == startTile.ColorType &&
+                pushTarget.SpecialType != TileSpecialType.Wall &&
+                pushTarget.SpecialType != TileSpecialType.Launcher &&
                 pushTarget.SpecialType != TileSpecialType.Spike;
 
             if (finalLandingCanFinish && scoreAfterFinalLanding > maxScore)
@@ -308,17 +312,17 @@ namespace RenkYolu.Levels
                 bestPath.Add(pushTarget);
 
                 Debug.Log(
-                    $"New Max Score Candidate From Spike Final Landing | " +
-                    $"Spike X:{spikeTile.X}, Y:{spikeTile.Y}, Direction:{spikeTile.SpikeDirection} | " +
+                    $"New Max Score Candidate From Launcher Final Landing | " +
+                    $"Launcher X:{launcherTile.X}, Y:{launcherTile.Y}, Direction:{launcherTile.LauncherDirection} | " +
                     $"Landing X:{pushTarget.X}, Y:{pushTarget.Y} | " +
                     $"Score:{maxScore} | " +
                     $"Path:{BuildPathText(bestPath)}"
                 );
             }
 
-            SearchSpikeSegment(
+            SearchLauncherSegment(
                 levelData,
-                spikeTile,
+                launcherTile,
                 pushTarget,
                 startTile,
                 currentScore,
@@ -330,7 +334,7 @@ namespace RenkYolu.Levels
             );
         }
 
-        private static void SearchSpikeSegment(
+        private static void SearchLauncherSegment(
             LevelData levelData,
             LevelTileData currentTile,
             LevelTileData pushTarget,
@@ -360,7 +364,7 @@ namespace RenkYolu.Levels
 
                     if (segment.Count > 0)
                     {
-                        scoreAfterSkippedTiles += SpikeShortcutBonus;
+                        scoreAfterSkippedTiles += GameBalance.LauncherShortcutBonus;
                     }
 
                     SearchBestPath(
@@ -381,7 +385,7 @@ namespace RenkYolu.Levels
                 currentPath.Add(nextTile);
                 segment.Add(nextTile);
 
-                SearchSpikeSegment(
+                SearchLauncherSegment(
                     levelData,
                     nextTile,
                     pushTarget,
@@ -435,17 +439,17 @@ namespace RenkYolu.Levels
             }
         }
 
-        private static LevelTileData GetSpikePushTarget(LevelData levelData, LevelTileData spikeTile)
+        private static LevelTileData GetLauncherPushTarget(LevelData levelData, LevelTileData launcherTile)
         {
-            if (levelData == null || spikeTile == null)
+            if (levelData == null || launcherTile == null)
             {
                 return null;
             }
 
-            int targetX = spikeTile.X;
-            int targetY = spikeTile.Y;
+            int targetX = launcherTile.X;
+            int targetY = launcherTile.Y;
 
-            switch (spikeTile.SpikeDirection)
+            switch (launcherTile.LauncherDirection)
             {
                 case GridDirection.Up:
                     targetY++;
@@ -518,6 +522,16 @@ namespace RenkYolu.Levels
                 );
 
                 return currentScore;
+            }
+
+            if (tile.SpecialType == TileSpecialType.Launcher)
+            {
+                return currentScore;
+            }
+
+            if (tile.SpecialType == TileSpecialType.Spike)
+            {
+                return currentScore - GameBalance.SpikePenalty;
             }
 
             int updatedScore = ApplyOperation(
@@ -606,9 +620,9 @@ namespace RenkYolu.Levels
                     $"{tile.ColorType} {tile.SpecialType}"
                 );
 
-                if (tile.SpecialType == TileSpecialType.Spike)
+                if (tile.SpecialType == TileSpecialType.Launcher)
                 {
-                    builder.Append($" {tile.SpikeDirection}");
+                    builder.Append($" {tile.LauncherDirection}");
                 }
 
                 if (i < path.Count - 1)

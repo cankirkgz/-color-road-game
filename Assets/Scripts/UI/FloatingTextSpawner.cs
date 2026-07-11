@@ -70,6 +70,17 @@ namespace RenkYolu.UI
             ShowText($"COMBO x{comboValue}", tile.transform.position + comboSpawnOffset, comboColor);
         }
 
+        public void ShowSpikePenalty(Tile tile, int penalty)
+        {
+            if (tile == null)
+            {
+                Debug.LogWarning("Spike penalty floating text skipped. Tile is null.");
+                return;
+            }
+
+            ShowText($"SPIKE -{Mathf.Abs(penalty)}", tile.transform.position + spawnOffset, negativeColor);
+        }
+
         private void ShowText(string textValue, Vector3 spawnPosition, Color textColor)
         {
             if (floatingTextPrefab == null)

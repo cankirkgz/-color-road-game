@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RenkYolu.Grid;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RenkYolu.Levels
 {
@@ -98,6 +99,45 @@ namespace RenkYolu.Levels
             startTileY = Mathf.Clamp(startTileY, 0, gridHeight - 1);
 
             UpdateOperationValues();
+            ValidateSpecialTiles();
+        }
+
+        private void ValidateSpecialTiles()
+        {
+            LevelTileData startTile = GetTileDataAt(startTileX, startTileY);
+
+            if (startTile != null &&
+                (!startTile.IsWalkable ||
+                 startTile.SpecialType == TileSpecialType.Wall ||
+                 startTile.SpecialType == TileSpecialType.Launcher ||
+                 startTile.SpecialType == TileSpecialType.Spike))
+            {
+                Debug.LogWarning(
+                    $"Level {levelId}: Start tile cannot be Wall, Launcher, Spike or non-walkable | " +
+                    $"X:{startTileX}, Y:{startTileY}, SpecialType:{startTile.SpecialType}",
+                    this
+                );
+            }
+
+            if (tiles == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                LevelTileData tile = tiles[i];
+
+                if (tile != null &&
+                    tile.SpecialType == TileSpecialType.Launcher &&
+                    tile.LauncherDirection == GridDirection.None)
+                {
+                    Debug.LogWarning(
+                        $"Level {levelId}: Launcher direction cannot be None | X:{tile.X}, Y:{tile.Y}",
+                        this
+                    );
+                }
+            }
         }
 
         private void UpdateOperationValues()
@@ -129,7 +169,9 @@ namespace RenkYolu.Levels
         [SerializeField] private int operationValue = 1;
         [SerializeField] private bool isWalkable = true;
         [SerializeField] private TileSpecialType specialType = TileSpecialType.None;
-        [SerializeField] private GridDirection spikeDirection = GridDirection.None;
+        [SerializeField]
+        [FormerlySerializedAs("spikeDirection")]
+        private GridDirection launcherDirection = GridDirection.None;
 
         public int X => x;
         public int Y => y;
@@ -138,7 +180,7 @@ namespace RenkYolu.Levels
         public int OperationValue => operationValue;
         public bool IsWalkable => isWalkable;
         public TileSpecialType SpecialType => specialType;
-        public GridDirection SpikeDirection => spikeDirection;
+        public GridDirection LauncherDirection => launcherDirection;
 
         public void RefreshOperationValue()
         {

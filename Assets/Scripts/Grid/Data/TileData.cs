@@ -12,7 +12,7 @@ namespace RenkYolu.Grid.Data
         public bool isVisible;
         public bool isWalkable;
         public TileSpecialType specialType;
-        public GridDirection spikeDirection;
+        public GridDirection launcherDirection;
 
         public TileData(
             int newTileId,
@@ -24,7 +24,7 @@ namespace RenkYolu.Grid.Data
             bool visible,
             bool walkable,
             TileSpecialType newSpecialType,
-            GridDirection newSpikeDirection
+            GridDirection newLauncherDirection
         )
         {
             tileId = newTileId;
@@ -36,7 +36,7 @@ namespace RenkYolu.Grid.Data
             isVisible = visible;
             isWalkable = walkable;
             specialType = newSpecialType;
-            spikeDirection = newSpikeDirection;
+            launcherDirection = newLauncherDirection;
         }
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using RenkYolu.Core;
 using RenkYolu.Grid;
+using RenkYolu.UI;
 using UnityEngine;
 
 namespace RenkYolu.Managers
@@ -50,6 +52,19 @@ namespace RenkYolu.Managers
             if (startTile == null)
             {
                 Debug.LogWarning("Start tile could not be set. Tile is null.");
+                return;
+            }
+
+            if (!startTile.IsWalkable ||
+                startTile.IsWall ||
+                startTile.IsLauncher ||
+                startTile.IsSpike)
+            {
+                Debug.LogError(
+                    $"Start tile could not be set. Invalid tile | " +
+                    $"X:{startTile.X}, Y:{startTile.Y}, SpecialType:{startTile.SpecialType}, " +
+                    $"Walkable:{startTile.IsWalkable}"
+                );
                 return;
             }
 
@@ -122,11 +137,11 @@ namespace RenkYolu.Managers
                 return;
             }
 
-            if (tile.IsSpike)
+            if (tile.IsWall || tile.IsLauncher || tile.IsSpike)
             {
                 Debug.Log(
-                    $"Score operation skipped. Spike tile has no score operation | " +
-                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y} | Direction:{tile.SpikeDirection}"
+                    $"Score operation skipped for special tile | " +
+                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y} | SpecialType:{tile.SpecialType}"
                 );
                 return;
             }
@@ -169,6 +184,11 @@ namespace RenkYolu.Managers
                 return 0;
             }
 
+            if (tile.IsWall || tile.IsLauncher)
+            {
+                return comboCounter;
+            }
+
             if (IsPositiveOperation(tile.OperationType))
             {
                 comboCounter++;
@@ -209,11 +229,11 @@ namespace RenkYolu.Managers
                 return false;
             }
 
-            if (tile.IsSpike)
+            if (tile.IsWall || tile.IsLauncher || tile.IsSpike)
             {
                 Debug.Log(
-                    $"Color bonus skipped. Spike tile has no color bonus | " +
-                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y}"
+                    $"Color bonus skipped for special tile | " +
+                    $"Tile ID: {tile.TileId} | X:{tile.X}, Y:{tile.Y} | SpecialType:{tile.SpecialType}"
                 );
                 return false;
             }
@@ -268,6 +288,12 @@ namespace RenkYolu.Managers
 
             for (int i = 0; i < path.Count; i++)
             {
+                if (path[i] != null && path[i].IsSpike)
+                {
+                    ApplySpikePenalty(path[i]);
+                    continue;
+                }
+
                 ApplyOperationFromTile(path[i]);
                 UpdateComboFromTile(path[i]);
                 TryApplyColorBonus(path[i]);
@@ -313,8 +339,39 @@ namespace RenkYolu.Managers
 
             Debug.Log(
                 $"Combo Reset | Reason: Spike tile | " +
-                $"Tile ID: {spikeTile.TileId} | X:{spikeTile.X}, Y:{spikeTile.Y} | " +
-                $"Direction:{spikeTile.SpikeDirection}"
+                $"Tile ID: {spikeTile.TileId} | X:{spikeTile.X}, Y:{spikeTile.Y}"
+            );
+        }
+
+        public void ApplySpikePenalty(Tile tile)
+        {
+            if (tile == null)
+            {
+                Debug.LogWarning("Spike penalty skipped. Tile is null.");
+                return;
+            }
+
+            if (!tile.IsSpike)
+            {
+                Debug.LogWarning(
+                    $"Spike penalty skipped. Tile is not Spike | " +
+                    $"Tile ID:{tile.TileId}, SpecialType:{tile.SpecialType}"
+                );
+                return;
+            }
+
+            int oldScore = currentScore;
+            currentScore -= GameBalance.SpikePenalty;
+            ResetComboBecauseOfSpike(tile);
+
+            if (FloatingTextSpawner.Instance != null)
+            {
+                FloatingTextSpawner.Instance.ShowSpikePenalty(tile, GameBalance.SpikePenalty);
+            }
+
+            Debug.Log(
+                $"Spike Penalty Applied | Tile ID:{tile.TileId}, X:{tile.X}, Y:{tile.Y} | " +
+                $"Penalty:-{GameBalance.SpikePenalty} | Score:{oldScore} -> {currentScore}"
             );
         }
 

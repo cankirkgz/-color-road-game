@@ -209,7 +209,7 @@ namespace RenkYolu.Grid
                     int operationValue = 1;
                     bool isWalkable = true;
                     TileSpecialType specialType = TileSpecialType.None;
-                    GridDirection spikeDirection = GridDirection.None;
+                    GridDirection launcherDirection = GridDirection.None;
 
                     if (levelTileData != null)
                     {
@@ -218,7 +218,7 @@ namespace RenkYolu.Grid
                         operationValue = levelTileData.OperationValue;
                         isWalkable = levelTileData.IsWalkable;
                         specialType = levelTileData.SpecialType;
-                        spikeDirection = levelTileData.SpikeDirection;
+                        launcherDirection = levelTileData.LauncherDirection;
                     }
                     else
                     {
@@ -249,7 +249,7 @@ namespace RenkYolu.Grid
                         operationValue,
                         isWalkable,
                         specialType,
-                        spikeDirection
+                        launcherDirection
                     );
 
                     tiles[x, y] = tile;
@@ -475,6 +475,20 @@ namespace RenkYolu.Grid
             if (startTile == null)
             {
                 Debug.LogError($"Start Tile could not be set! X: {startTileX}, Y: {startTileY}");
+                return;
+            }
+
+            if (!startTile.IsWalkable ||
+                startTile.IsWall ||
+                startTile.IsLauncher ||
+                startTile.IsSpike)
+            {
+                Debug.LogError(
+                    $"Start Tile is invalid | X:{startTileX}, Y:{startTileY}, " +
+                    $"Walkable:{startTile.IsWalkable}, SpecialType:{startTile.SpecialType}. " +
+                    "Start tile cannot be Wall, Launcher or Spike."
+                );
+                startTile = null;
                 return;
             }
 

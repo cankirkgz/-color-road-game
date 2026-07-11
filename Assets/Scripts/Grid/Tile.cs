@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 using DG.Tweening;
+using UnityEngine.Serialization;
 
 namespace RenkYolu.Grid
 {
@@ -19,15 +20,36 @@ namespace RenkYolu.Grid
         [SerializeField] private Color blockedFeedbackColor = new Color(0.6f, 0.05f, 0.05f);
         [SerializeField] private float blockedFeedbackDuration = 0.08f;
 
-        [Header("Special Tile Visuals")]
-        [SerializeField] private TMP_Text spikeIconText;
-        [SerializeField] private Color spikeIconColor = new Color(1f, 0.18f, 0.18f);
-        [SerializeField] private Color spikeFlashColor = new Color(1f, 0.05f, 0.05f);
-        [SerializeField] private float spikeEffectDuration = 0.08f;
-        [SerializeField] private float spikePulseScale = 1.18f;
+        [Header("Launcher Visuals")]
+        [SerializeField]
+        [FormerlySerializedAs("spikeIconText")]
+        private TMP_Text launcherIconText;
+        [SerializeField]
+        [FormerlySerializedAs("spikeIconColor")]
+        private Color launcherIconColor = new Color(1f, 0.18f, 0.18f);
+        [SerializeField] private Color launcherTileColor = new Color(0.18f, 0.18f, 0.18f);
+        [SerializeField] private float launcherEffectDuration = 0.08f;
+        [SerializeField] private float launcherPulseScale = 1.12f;
+
+        [Header("Spike Trap Visuals")]
+        [SerializeField] private GameObject spikeTrapVisual;
+        [SerializeField] private Color spikeTrapColor = new Color(0.18f, 0.18f, 0.18f);
+        [SerializeField]
+        [FormerlySerializedAs("spikeFlashColor")]
+        private Color spikeDamageFlashColor = new Color(1f, 0.05f, 0.05f);
+        [SerializeField]
+        [FormerlySerializedAs("spikeEffectDuration")]
+        private float spikeDamageEffectDuration = 0.08f;
+        [SerializeField]
+        [FormerlySerializedAs("spikePulseScale")]
+        private float spikeDamagePulseScale = 1.18f;
 
         private Color originalColor;
         private bool isSelected;
+        private bool hasWarnedMissingSpikeVisual;
+        private Vector3 tileBaseScale = Vector3.one;
+        private Vector3 launcherIconBaseScale = Vector3.one;
+        private Vector3 spikeVisualBaseScale = Vector3.one;
 
         [SerializeField] private float hideAnimationDuration = 0.25f;
         [SerializeField] private float textFadeDuration = 0.2f;
@@ -48,8 +70,9 @@ namespace RenkYolu.Grid
         public int OperationValue => tileData.operationValue;
         public bool IsVisible => tileData.isVisible;
         public TileSpecialType SpecialType => tileData.specialType;
-        public GridDirection SpikeDirection => tileData.spikeDirection;
+        public GridDirection LauncherDirection => tileData.launcherDirection;
         public bool IsWall => SpecialType == TileSpecialType.Wall;
+        public bool IsLauncher => SpecialType == TileSpecialType.Launcher;
         public bool IsSpike => SpecialType == TileSpecialType.Spike;
         public bool IsWalkable => tileData.isWalkable && !IsWall;
         public bool IsSelected => isSelected;
@@ -78,9 +101,15 @@ namespace RenkYolu.Grid
                 GridDirection.None
             );
 
+            CacheBaseScales();
+
             if (IsWall)
             {
                 ApplyWallVisuals();
+            }
+            else if (IsLauncher)
+            {
+                ApplyLauncherVisuals();
             }
             else if (IsSpike)
             {
@@ -93,7 +122,7 @@ namespace RenkYolu.Grid
 
                 originalColor = spriteRenderer.color;
 
-                HideSpecialIcons();
+                HideSpecialVisuals();
             }
 
             isSelected = false;
@@ -117,7 +146,7 @@ namespace RenkYolu.Grid
             int newOperationValue,
             bool walkable,
             TileSpecialType newSpecialType,
-            GridDirection newSpikeDirection
+            GridDirection newLauncherDirection
         )
         {
             tileData = new TileData(
@@ -130,12 +159,18 @@ namespace RenkYolu.Grid
                 true,
                 walkable,
                 newSpecialType,
-                newSpikeDirection
+                newLauncherDirection
             );
+
+            CacheBaseScales();
 
             if (IsWall)
             {
                 ApplyWallVisuals();
+            }
+            else if (IsLauncher)
+            {
+                ApplyLauncherVisuals();
             }
             else if (IsSpike)
             {
@@ -148,7 +183,7 @@ namespace RenkYolu.Grid
 
                 originalColor = spriteRenderer.color;
 
-                HideSpecialIcons();
+                HideSpecialVisuals();
             }
 
             isSelected = false;
@@ -166,8 +201,8 @@ namespace RenkYolu.Grid
                 $"Color: {ColorType}, Operation: {OperationType}, " +
                 $"Value: {OperationValue}, Visible: {IsVisible}, " +
                 $"Walkable: {IsWalkable}, SpecialType: {SpecialType}, " +
-                $"IsWall: {IsWall}, IsSpike: {IsSpike}, " +
-                $"SpikeDirection: {SpikeDirection}"
+                $"IsWall: {IsWall}, IsLauncher: {IsLauncher}, IsSpike: {IsSpike}, " +
+                $"LauncherDirection: {LauncherDirection}"
             );
         }
 
@@ -260,14 +295,21 @@ namespace RenkYolu.Grid
                 return;
             }
 
-            if (IsSpike)
+            if (IsLauncher)
             {
-                ApplySpikeVisuals();
-                Debug.Log($"Spike Tile Reveal Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {SpikeDirection}");
+                ApplyLauncherVisuals();
+                Debug.Log($"Launcher Tile Reveal Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {LauncherDirection}");
                 return;
             }
 
-            HideSpecialIcons();
+            if (IsSpike)
+            {
+                ApplySpikeVisuals();
+                Debug.Log($"Spike Tile Reveal Ignored | ID: {TileId}, X: {X}, Y: {Y}");
+                return;
+            }
+
+            HideSpecialVisuals();
 
             ApplyOperationText();
 
@@ -308,14 +350,21 @@ namespace RenkYolu.Grid
                 return;
             }
 
-            if (IsSpike)
+            if (IsLauncher)
             {
-                ApplySpikeVisuals();
-                Debug.Log($"Spike Tile Hide Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {SpikeDirection}");
+                ApplyLauncherVisuals();
+                Debug.Log($"Launcher Tile Hide Ignored | ID: {TileId}, X: {X}, Y: {Y}, Direction: {LauncherDirection}");
                 return;
             }
 
-            HideSpecialIcons();
+            if (IsSpike)
+            {
+                ApplySpikeVisuals();
+                Debug.Log($"Spike Tile Hide Ignored | ID: {TileId}, X: {X}, Y: {Y}");
+                return;
+            }
+
+            HideSpecialVisuals();
 
             if (operationText != null)
             {
@@ -356,25 +405,28 @@ namespace RenkYolu.Grid
                 selectionBorder.SetActive(false);
             }
 
-            HideSpecialIcons();
+            HideSpecialVisuals();
         }
 
-        private void ApplySpikeVisuals()
+        private void ApplyLauncherVisuals()
         {
-            if (spikeIconText == null)
-            {
-                Debug.LogWarning($"SpikeIconText reference is missing on Tile | ID: {TileId}, X: {X}, Y: {Y}");
-                return;
-            }
+            HideSpecialVisuals();
 
-            spikeIconText.gameObject.SetActive(true);
-            spikeIconText.text = GetSpikeDirectionIcon();
-            spikeIconText.color = spikeIconColor;
+            if (launcherIconText == null)
+            {
+                Debug.LogWarning($"LauncherIconText reference is missing on Tile | ID: {TileId}, X: {X}, Y: {Y}");
+            }
+            else
+            {
+                launcherIconText.gameObject.SetActive(true);
+                launcherIconText.text = GetLauncherDirectionIcon();
+                launcherIconText.color = launcherIconColor;
+            }
 
             if (spriteRenderer != null)
             {
-                spriteRenderer.color = new Color(0.18f, 0.18f, 0.18f);
-                originalColor = spriteRenderer.color;
+                spriteRenderer.color = launcherTileColor;
+                originalColor = launcherTileColor;
             }
 
             if (operationText != null)
@@ -383,14 +435,42 @@ namespace RenkYolu.Grid
             }
 
             Debug.Log(
-                $"Spike Visual Applied | ID: {TileId}, X: {X}, Y: {Y}, " +
-                $"Direction: {SpikeDirection}, Icon: {spikeIconText.text}"
+                $"Launcher Visual Applied | ID: {TileId}, X: {X}, Y: {Y}, " +
+                $"Direction: {LauncherDirection}"
             );
         }
 
-        private string GetSpikeDirectionIcon()
+        private void ApplySpikeVisuals()
         {
-            switch (SpikeDirection)
+            HideSpecialVisuals();
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = spikeTrapColor;
+                originalColor = spikeTrapColor;
+            }
+
+            if (operationText != null)
+            {
+                operationText.gameObject.SetActive(false);
+            }
+
+            if (spikeTrapVisual != null)
+            {
+                spikeTrapVisual.SetActive(true);
+            }
+            else if (!hasWarnedMissingSpikeVisual)
+            {
+                hasWarnedMissingSpikeVisual = true;
+                Debug.LogWarning($"SpikeTrapVisual reference is missing on Tile | ID: {TileId}, X: {X}, Y: {Y}");
+            }
+
+            Debug.Log($"Spike Visual Applied | ID: {TileId}, X: {X}, Y: {Y}");
+        }
+
+        private string GetLauncherDirectionIcon()
+        {
+            switch (LauncherDirection)
             {
                 case GridDirection.Up:
                     return "^";
@@ -409,11 +489,31 @@ namespace RenkYolu.Grid
             }
         }
 
-        private void HideSpecialIcons()
+        private void HideSpecialVisuals()
         {
-            if (spikeIconText != null)
+            if (launcherIconText != null)
             {
-                spikeIconText.gameObject.SetActive(false);
+                launcherIconText.gameObject.SetActive(false);
+            }
+
+            if (spikeTrapVisual != null)
+            {
+                spikeTrapVisual.SetActive(false);
+            }
+        }
+
+        private void CacheBaseScales()
+        {
+            tileBaseScale = transform.localScale;
+
+            if (launcherIconText != null)
+            {
+                launcherIconBaseScale = launcherIconText.transform.localScale;
+            }
+
+            if (spikeTrapVisual != null)
+            {
+                spikeVisualBaseScale = spikeTrapVisual.transform.localScale;
             }
         }
 
@@ -602,6 +702,48 @@ namespace RenkYolu.Grid
             });
         }
 
+        public void PlayLauncherEffect()
+        {
+            if (!IsLauncher)
+            {
+                return;
+            }
+
+            if (launcherIconText != null)
+            {
+                Transform iconTransform = launcherIconText.transform;
+                iconTransform.DOKill();
+                iconTransform.localScale = launcherIconBaseScale;
+
+                Sequence iconSequence = DOTween.Sequence();
+                iconSequence.Append(
+                    iconTransform.DOScale(launcherIconBaseScale * launcherPulseScale, launcherEffectDuration)
+                        .SetEase(Ease.OutBack)
+                );
+                iconSequence.Append(
+                    iconTransform.DOScale(launcherIconBaseScale, launcherEffectDuration)
+                        .SetEase(Ease.InBack)
+                );
+                iconSequence.OnComplete(() => iconTransform.localScale = launcherIconBaseScale);
+            }
+
+            transform.DOKill();
+            transform.localScale = tileBaseScale;
+
+            Sequence tileSequence = DOTween.Sequence();
+            tileSequence.Append(
+                transform.DOScale(tileBaseScale * 1.03f, launcherEffectDuration)
+                    .SetEase(Ease.OutQuad)
+            );
+            tileSequence.Append(
+                transform.DOScale(tileBaseScale, launcherEffectDuration)
+                    .SetEase(Ease.InQuad)
+            );
+            tileSequence.OnComplete(() => transform.localScale = tileBaseScale);
+
+            Debug.Log($"Launcher Effect Played | X:{X}, Y:{Y}, Direction:{LauncherDirection}");
+        }
+
         public void PlaySpikeEffect()
         {
             if (!IsSpike)
@@ -617,11 +759,11 @@ namespace RenkYolu.Grid
                 Sequence colorSequence = DOTween.Sequence();
 
                 colorSequence.Append(
-                    spriteRenderer.DOColor(spikeFlashColor, spikeEffectDuration)
+                    spriteRenderer.DOColor(spikeDamageFlashColor, spikeDamageEffectDuration)
                         .SetEase(Ease.OutQuad)
                 );
                 colorSequence.Append(
-                    spriteRenderer.DOColor(baseColor, spikeEffectDuration)
+                    spriteRenderer.DOColor(baseColor, spikeDamageEffectDuration)
                         .SetEase(Ease.InQuad)
                 );
                 colorSequence.OnComplete(() =>
@@ -631,41 +773,42 @@ namespace RenkYolu.Grid
                 });
             }
 
-            if (spikeIconText != null)
+            if (spikeTrapVisual != null)
             {
-                spikeIconText.transform.DOKill();
+                Transform spikeTransform = spikeTrapVisual.transform;
+                spikeTransform.DOKill();
+                spikeTransform.localScale = spikeVisualBaseScale;
 
-                Vector3 originalScale = Vector3.one;
-                spikeIconText.transform.localScale = originalScale;
+                Sequence spikeSequence = DOTween.Sequence();
 
-                Sequence iconSequence = DOTween.Sequence();
-
-                iconSequence.Append(
-                    spikeIconText.transform.DOScale(originalScale * spikePulseScale, spikeEffectDuration)
+                spikeSequence.Append(
+                    spikeTransform.DOScale(spikeVisualBaseScale * spikeDamagePulseScale, spikeDamageEffectDuration)
                         .SetEase(Ease.OutBack)
                 );
-                iconSequence.Append(
-                    spikeIconText.transform.DOScale(originalScale, spikeEffectDuration)
+                spikeSequence.Append(
+                    spikeTransform.DOScale(spikeVisualBaseScale, spikeDamageEffectDuration)
                         .SetEase(Ease.InBack)
                 );
+                spikeSequence.OnComplete(() => spikeTransform.localScale = spikeVisualBaseScale);
             }
 
             transform.DOKill();
+            transform.localScale = tileBaseScale;
 
-            Vector3 tileOriginalScale = transform.localScale;
-            Vector3 targetScale = tileOriginalScale * 1.04f;
+            Vector3 targetScale = tileBaseScale * 1.04f;
             Sequence tileSequence = DOTween.Sequence();
 
             tileSequence.Append(
-                transform.DOScale(targetScale, spikeEffectDuration)
+                transform.DOScale(targetScale, spikeDamageEffectDuration)
                     .SetEase(Ease.OutQuad)
             );
             tileSequence.Append(
-                transform.DOScale(tileOriginalScale, spikeEffectDuration)
+                transform.DOScale(tileBaseScale, spikeDamageEffectDuration)
                     .SetEase(Ease.InQuad)
             );
+            tileSequence.OnComplete(() => transform.localScale = tileBaseScale);
 
-            Debug.Log($"Spike Effect Played | X:{X}, Y:{Y}, Direction:{SpikeDirection}");
+            Debug.Log($"Spike Effect Played | X:{X}, Y:{Y}");
         }
 
         private Color GetCurrentTargetColor()
@@ -680,9 +823,14 @@ namespace RenkYolu.Grid
                 return wallColor;
             }
 
+            if (IsLauncher)
+            {
+                return launcherTileColor;
+            }
+
             if (IsSpike)
             {
-                return new Color(0.18f, 0.18f, 0.18f);
+                return spikeTrapColor;
             }
 
             if (tileData.isVisible)
@@ -691,6 +839,26 @@ namespace RenkYolu.Grid
             }
 
             return Color.gray;
+        }
+
+        private void OnDestroy()
+        {
+            transform.DOKill();
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.DOKill();
+            }
+
+            if (launcherIconText != null)
+            {
+                launcherIconText.transform.DOKill();
+            }
+
+            if (spikeTrapVisual != null)
+            {
+                spikeTrapVisual.transform.DOKill();
+            }
         }
     }
 }
