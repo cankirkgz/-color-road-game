@@ -1,4 +1,4 @@
-# Renk Yolu
+# Huehop Atlas
 
 Unity 6.4 ile geliştirilmiş 2D hafıza ve rota oyunu. Ana sahneyi `Assets/Scenes/MainScene.unity` yolundan açıp Play'e basarak başlayabilirsin. Oyun çevrimdışı çalışır ve ilerlemeyi cihazda saklar.
 
@@ -26,7 +26,7 @@ Bölüm numarası ve kayıt tohumu tahtayı belirler. Tekrar denemelerde aynı t
 
 ## Derleme ve test
 
-Unity Hub'da `6000.4.3f1` kullan. Android için Android Build Support ve beraberindeki SDK, NDK ve OpenJDK modüllerini kur. Unity menüsündeki **Renk Yolu → Build Android APK** seçeneği `Builds/RenkYolu.apk`, **Renk Yolu → Build Windows** ise `Builds/Windows/RenkYolu.exe` üretir. Android paketi ARM64 ve Android 7.1 veya üzerini hedefler.
+Unity Hub'da `6000.4.3f1` kullan. Android için Android Build Support ve beraberindeki SDK, NDK ve OpenJDK modüllerini kur. Unity menüsündeki **Huehop Atlas → Build Android APK** seçeneği `Builds/HuehopAtlas.apk`, **Huehop Atlas → Build Windows** ise `Builds/Windows/HuehopAtlas.exe` üretir. Android paketi ARM64 ve Android 7.1 veya üzerini hedefler.
 
 Unity Test Runner'da **EditMode** ve **PlayMode** testleri vardır. EditMode testleri puanlama, özel kareler, maksimum puan ve kayıt davranışını kontrol eder. PlayMode testleri ana sahnede ilk turu, bölüm açmayı, duraklatmayı ve süre dolduğunda yeniden denemeyi yürütür.
 

@@ -10,11 +10,11 @@ namespace RenkYolu.Editor
 {
     public static class RoadBuild
     {
-        [MenuItem("Renk Yolu/Build Android APK")]
-        public static void Android() => Build(BuildTarget.Android, "Builds/RenkYolu.apk");
+        [MenuItem("Huehop Atlas/Build Android APK")]
+        public static void Android() => Build(BuildTarget.Android, "Builds/HuehopAtlas.apk");
 
-        [MenuItem("Renk Yolu/Build Windows")]
-        public static void Windows() => Build(BuildTarget.StandaloneWindows64, "Builds/Windows/RenkYolu.exe");
+        [MenuItem("Huehop Atlas/Build Windows")]
+        public static void Windows() => Build(BuildTarget.StandaloneWindows64, "Builds/Windows/HuehopAtlas.exe");
 
         private static void Build(BuildTarget target, string defaultPath)
         {
@@ -36,9 +36,9 @@ namespace RenkYolu.Editor
             };
             BuildReport report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result != BuildResult.Succeeded)
-                throw new InvalidOperationException("Renk Yolu build failed: " + report.summary.result);
+                throw new InvalidOperationException(PlayerSettings.productName + " build failed: " + report.summary.result);
 
-            Debug.Log("Renk Yolu build complete: " + location + " (" + report.summary.totalSize + " bytes)");
+            Debug.Log(PlayerSettings.productName + " build complete: " + location + " (" + report.summary.totalSize + " bytes)");
         }
 
         private static void SetAndroidIcon()
