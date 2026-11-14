@@ -67,6 +67,25 @@ namespace RenkYolu.Campaign
 
         public RoadLevelRecord Find(int level) => levels.Find(record => record.level == level);
 
+        public bool RefreshEarlyStars()
+        {
+            bool changed = false;
+            foreach (RoadLevelRecord record in levels)
+            {
+                if (record.level < 1 || record.level > RoadDifficulty.LastRebalancedLevel)
+                    continue;
+
+                int stars = RoadGenerator.Generate(seed, record.level).Stars(record.best);
+                if (stars != record.stars)
+                {
+                    record.stars = stars;
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
         public void RecordWin(int level, long score, int stars, long shardMask)
         {
             if (level < 1 || level > unlocked)

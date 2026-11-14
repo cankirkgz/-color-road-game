@@ -6,6 +6,8 @@ namespace RenkYolu.Campaign
 {
     public readonly struct RoadDifficulty
     {
+        internal const int LastRebalancedLevel = 8;
+
         private RoadDifficulty(int level, int size, int colors, int memory, int drawing, int twoStars, int threeStars)
         {
             Level = level;
@@ -35,7 +37,7 @@ namespace RenkYolu.Campaign
             int memory = level == 1 ? 10 : size * 2 + (level < 6 ? 1 : 0);
             int drawing = 20 + (size - 4) * 7 + (level < 4 ? 5 : 0);
             int twoStars = 12 + Math.Min(level - 1, 140) / 6;
-            int threeStars = 24 + Math.Min(level - 1, 160) / 4;
+            int threeStars = Math.Max(25, 24 + Math.Min(level - 1, 160) / 4);
             return new RoadDifficulty(level, size, colors, memory, drawing, twoStars, threeStars);
         }
     }
@@ -47,17 +49,8 @@ namespace RenkYolu.Campaign
             Board = board;
             Difficulty = difficulty;
             Solution = solution;
-            long twoStars = PercentOfMaximum(difficulty.TwoStarPercent);
-            long threeStars = PercentOfMaximum(difficulty.ThreeStarPercent);
-            if (difficulty.Level <= 8)
-            {
-                int forgivingLength = difficulty.Level == 1 ? 2 : 6;
-                long easyScore = solution.BestWithin(forgivingLength);
-                threeStars = Math.Min(threeStars, easyScore);
-            }
-
-            ThreeStarScore = Math.Max(2, threeStars);
-            TwoStarScore = Math.Min(twoStars, ThreeStarScore - 1);
+            TwoStarScore = PercentOfMaximum(difficulty.TwoStarPercent);
+            ThreeStarScore = PercentOfMaximum(difficulty.ThreeStarPercent);
         }
 
         public RoadBoard Board { get; }

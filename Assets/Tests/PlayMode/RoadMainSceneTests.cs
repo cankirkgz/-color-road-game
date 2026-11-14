@@ -57,7 +57,7 @@ namespace RenkYolu.Tests
             Assert.That(Exists("Bölüm tamam!"), Is.True);
             var save = JsonUtility.FromJson<RoadProgress>(PlayerPrefs.GetString(Key));
             Assert.That(save.unlocked, Is.EqualTo(2));
-            Assert.That(save.Find(1).stars, Is.EqualTo(3));
+            Assert.That(save.Find(1).stars, Is.EqualTo(1));
             Assert.That(save.TotalShards, Is.EqualTo(1));
             Click("Sonraki Bölüm");
             Assert.That(Exists("Bölüm 2"), Is.True);

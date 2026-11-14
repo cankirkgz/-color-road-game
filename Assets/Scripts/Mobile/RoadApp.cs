@@ -562,7 +562,11 @@ namespace RenkYolu.Mobile
                     RoadProgress save = JsonUtility.FromJson<RoadProgress>(PlayerPrefs.GetString(SaveKey));
                     if (save != null && save.levels != null && save.unlocked > 0 &&
                         save.cube >= 0 && save.cube < save.AvailableCubes)
+                    {
+                        if (save.RefreshEarlyStars())
+                            WriteProgress(save);
                         return save;
+                    }
                 }
                 catch (ArgumentException)
                 {
@@ -572,14 +576,15 @@ namespace RenkYolu.Mobile
 
             fresh.unlocked = Mathf.Clamp(PlayerPrefs.GetInt("UnlockedLevel", 1), 1, 20);
             fresh.legacyScore = Math.Max(0, PlayerPrefs.GetInt("TotalScore", 0));
-            PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(fresh));
-            PlayerPrefs.Save();
+            WriteProgress(fresh);
             return fresh;
         }
 
-        private void SaveProgress()
+        private void SaveProgress() => WriteProgress(progress);
+
+        private static void WriteProgress(RoadProgress save)
         {
-            PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(progress));
+            PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(save));
             PlayerPrefs.Save();
         }
 

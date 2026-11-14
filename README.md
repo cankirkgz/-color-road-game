@@ -20,7 +20,7 @@ Unity 6.4 ile geliştirilmiş 2D hafıza ve rota oyunu. Ana sahneyi `Assets/Scen
 
 Bölüm numarası ve kayıt tohumu tahtayı belirler. Tekrar denemelerde aynı tahta açılır. 7×7 boyutundan sonra yeni tahtalar üretilmeye devam eder. Üretici puan getiren en az bir geçerli rota ayırır ve tam aramayı hızlı tutmak için büyük tahtalarda bölgeleri sınırlı geçitlerle bağlar.
 
-Çözücü, çizilebilir rotaları ve fırlatıcı inişlerini tarayarak her tahta için gerçek maksimum puanı hesaplar. İlk bölümde iki karelik geçerli bir rotayla üç yıldız alınabilir. İlk sekiz bölümde kısa rotalar için ek tolerans vardır. Sonraki bölümlerde üç yıldız eşiği maksimum puanın oranı olarak %64'e kadar yükselir.
+Çözücü, çizilebilir rotaları ve fırlatıcı inişlerini tarayarak her tahta için gerçek maksimum puanı hesaplar. İlk bölümde iki yıldız için maksimum puanın en az %12'si, üç yıldız için en az %25'i gerekir. Üç yıldız eşiği ilerleyen bölümlerde %64'e kadar yükselir. İlk sekiz bölümdeki kayıtlı yıldızlar bölüm rekoru üzerinden güncellenir.
 
 ## Derleme ve test
 

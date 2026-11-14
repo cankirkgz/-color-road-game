@@ -127,6 +127,34 @@ namespace RenkYolu.Tests
         }
 
         [Test]
+        public void FirstLevelStarsUseTheTrueMaximumEvenWhenTwoSquaresCanWin()
+        {
+            RoadLevel level = RoadGenerator.Generate(86421116, 1);
+            RoadRun shortRun = RoadRules.Play(level.Board, level.Solution.ShortRoute);
+            Assert.That(level.Solution.Maximum, Is.EqualTo(1728));
+            Assert.That(shortRun.Score, Is.EqualTo(20));
+            Assert.That(level.Stars(shortRun.Score), Is.EqualTo(1));
+            Assert.That(level.TwoStarScore, Is.EqualTo(208));
+            Assert.That(level.ThreeStarScore, Is.EqualTo(432));
+            Assert.That(level.Stars(431), Is.EqualTo(2));
+            Assert.That(level.Stars(432), Is.EqualTo(3));
+            Assert.That(level.Solution.BestWithin(10), Is.GreaterThanOrEqualTo(432));
+        }
+
+        [Test]
+        public void RebalancedStarsUpdateExistingRecordsWithoutLosingProgress()
+        {
+            var progress = new RoadProgress(86421116);
+            progress.RecordWin(1, 20, 3, 2);
+            Assert.That(progress.RefreshEarlyStars(), Is.True);
+            Assert.That(progress.TotalStars, Is.EqualTo(1));
+            Assert.That(progress.TotalScore, Is.EqualTo(20));
+            Assert.That(progress.TotalShards, Is.EqualTo(1));
+            Assert.That(progress.unlocked, Is.EqualTo(2));
+            Assert.That(progress.RefreshEarlyStars(), Is.False);
+        }
+
+        [Test]
         public void CampaignSupportsFirstTwoHundredAndLaterLevels()
         {
             var timer = Stopwatch.StartNew();
@@ -152,11 +180,11 @@ namespace RenkYolu.Tests
                         Is.InRange(1, 2), label);
                     if (number == 1)
                     {
-                        Assert.That(level.Stars(shortRun.Score), Is.EqualTo(3), label);
+                        Assert.That(level.Stars(shortRun.Score), Is.EqualTo(1), label);
                         Assert.That(shortRun.Shards, Is.EqualTo(1), label);
                     }
-                    if (number <= 8)
-                        Assert.That(level.ThreeStarScore, Is.LessThanOrEqualTo(level.Solution.BestWithin(6)), label);
+                    Assert.That(level.ThreeStarScore * 100,
+                        Is.GreaterThanOrEqualTo(level.Solution.Maximum * 25), label);
                     count++;
                     maxScore = Math.Max(maxScore, best.Score);
                 }
