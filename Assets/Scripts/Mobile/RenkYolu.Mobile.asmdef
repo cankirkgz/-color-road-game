@@ -1,0 +1,5 @@
+{
+    "name": "RenkYolu.Mobile",
+    "rootNamespace": "RenkYolu.Mobile",
+    "references": ["RenkYolu.Campaign", "UnityEngine.UI", "Unity.InputSystem"]
+}

@@ -1,0 +1,7 @@
+{
+    "name": "RenkYolu.EditMode",
+    "rootNamespace": "RenkYolu.Tests",
+    "references": ["RenkYolu.Campaign"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

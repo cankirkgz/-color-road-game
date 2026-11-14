@@ -184,43 +184,7 @@ namespace RenkYolu.Levels
 
         public void RefreshOperationValue()
         {
-            operationValue = GetDefaultOperationValue(operationType);
-        }
-
-        private int GetDefaultOperationValue(TileOperationType type)
-        {
-            switch (type)
-            {
-                case TileOperationType.PlusOne:
-                    return 1;
-
-                case TileOperationType.PlusFive:
-                    return 5;
-
-                case TileOperationType.PlusTen:
-                    return 10;
-
-                case TileOperationType.MinusFive:
-                    return -5;
-
-                case TileOperationType.MinusTen:
-                    return -10;
-
-                case TileOperationType.MinusFifteen:
-                    return -15;
-
-                case TileOperationType.MultiplyTwo:
-                    return 2;
-
-                case TileOperationType.MultiplyThree:
-                    return 3;
-
-                case TileOperationType.DivideTwo:
-                    return 2;
-
-                default:
-                    return 0;
-            }
+            operationValue = TileOperationCalculator.DefaultValue(operationType);
         }
     }
 }

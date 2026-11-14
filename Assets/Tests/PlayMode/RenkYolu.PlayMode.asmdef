@@ -1,0 +1,6 @@
+{
+    "name": "RenkYolu.PlayMode",
+    "rootNamespace": "RenkYolu.Tests",
+    "references": ["RenkYolu.Campaign", "RenkYolu.Mobile", "UnityEngine.UI"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}
