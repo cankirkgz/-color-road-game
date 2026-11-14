@@ -21,9 +21,9 @@ namespace RenkYolu.Mobile
 
         private readonly Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
-        internal Font Display { get; } = Load("BricolageGrotesque-ExtraBold");
-        internal Font Bold { get; } = Load("DMSans-Bold");
-        internal Font Body { get; } = Load("DMSans-Regular");
+        internal Font Display { get; } = Load("Inter-ExtraBold");
+        internal Font Bold { get; } = Load("Inter-Bold");
+        internal Font Body { get; } = Load("Inter-Regular");
 
         internal static Color32 Hex(uint rgb) =>
             new Color32((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb, 255);

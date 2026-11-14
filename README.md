@@ -2,6 +2,8 @@
 
 Unity 6.4 ile geliştirilmiş 2D hafıza ve rota oyunu. Ana sahneyi `Assets/Scenes/MainScene.unity` yolundan açıp Play'e basarak başlayabilirsin. Oyun çevrimdışı çalışır ve ilerlemeyi cihazda saklar.
 
+İlk açılışta Android, bağlı mobil şebekenin ülkesini kullanır. Şebeke ülkesi yoksa cihazın bölge ayarına bakar. Rusya için Rusça, diğer bölgeler için İngilizce açılır. **Settings / Настройки** ekranında dili istediğin zaman değiştirebilirsin. Seçim cihazda saklanır.
+
 ## Oynanış
 
 - Renkleri ve puan işlemlerini ezberle. Sol alttaki **BAŞLA** karesinden sürükleyerek yatay veya dikey bir rota çiz. Son kareye dokunarak veya geri al düğmesiyle rotayı kısalt.
@@ -28,4 +30,4 @@ Unity Hub'da `6000.4.3f1` kullan. Android için Android Build Support ve beraber
 
 Unity Test Runner'da **EditMode** ve **PlayMode** testleri vardır. EditMode testleri puanlama, özel kareler, maksimum puan ve kayıt davranışını kontrol eder. PlayMode testleri ana sahnede ilk turu, bölüm açmayı, duraklatmayı ve süre dolduğunda yeniden denemeyi yürütür.
 
-Yazı tipleri Bricolage Grotesque ve DM Sans. SIL Open Font License metinleri `Assets/Resources/RenkYolu/Fonts` klasöründedir.
+Yazı tipi Inter. SIL Open Font License metni `Assets/Resources/RenkYolu/Fonts` klasöründedir.

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 616acc5ca91fe0145a4afbaa97b5334a
+guid: 8021ec49e3e0e6d4581fb43df30c9709
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Bricolage Grotesque 96pt ExtraBold
+  - Inter
   fallbackFontReferences: []
   customCharacters:
   fontRenderingMode: 0

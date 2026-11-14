@@ -7,7 +7,13 @@ namespace RenkYolu.Mobile
 {
     public sealed partial class RoadApp
     {
-        private static readonly string[] CubeNames = { "Klasik", "Yaramaz", "Yıldız", "Pofuduk" };
+        private string CubeName(int style) => style switch
+        {
+            1 => T("Mischief", "Проказник"),
+            2 => T("Starlight", "Звёздный"),
+            3 => T("Fluffy", "Пушистик"),
+            _ => T("Classic", "Классика")
+        };
         private static readonly Color[] CubeColors =
         {
             RoadTheme.Amber, RoadTheme.Mint, RoadTheme.Hex(0xCDB2FD), RoadTheme.Pink
@@ -17,7 +23,7 @@ namespace RenkYolu.Mobile
         {
             NewPage("Ana menü");
             phase = Phase.Home;
-            Label(page, "RENK YOLU", 33, 32, 200, 24, 18, RoadTheme.Cream, theme.Bold);
+            Label(page, Application.productName.ToUpperInvariant(), 33, 32, 260, 24, 18, RoadTheme.Cream, theme.Bold);
             theme.Icon(page, "spark", 481, 32, 27, RoadTheme.Amber);
             Image hero = theme.Box(page, "Ana menü kartı", 32, 80, 476, 450, RoadTheme.Hex(0x352751), 32);
             RectTransform card = hero.rectTransform;
@@ -33,22 +39,51 @@ namespace RenkYolu.Mobile
             theme.Icon(card, "spark", 79, 122, 11, RoadTheme.Muted);
             menuCube = new RoadCube(theme, card, 112, progress.cube);
             menuCube.Draw(new Vector2(238, 143), 10, 0, 0, CubeColors[progress.cube]);
-            Label(card, "Renk\nYolu", 35, 241, 405, 131, 66, RoadTheme.Cream, theme.Display,
+            Label(card, Application.productName.Replace(' ', '\n'), 35, 241, 405, 131, 66, RoadTheme.Cream, theme.Display,
                 TextAnchor.MiddleCenter).lineSpacing = .78f;
-            Label(card, "Rengi hatırla, yolunu çiz.", 24, 387, 428, 27, 22, RoadTheme.Muted,
+            Label(card, T("Remember the color. Draw the route.", "Запомни цвет. Нарисуй маршрут."), 24, 387, 428, 27, 22, RoadTheme.Muted,
                 theme.Body, TextAnchor.MiddleCenter);
 
             bool first = ContinueAt == 1;
-            theme.Button(page, first ? "Oyna" : Format(ContinueAt) + ". Bölüme Devam Et",
+            theme.Button(page, first ? T("Play", "Играть") : T("Continue to Level ", "Продолжить с уровня ") + Format(ContinueAt),
                 32, 553, 476, 69, RoadTheme.Mint, RoadTheme.Ink, () => StartLevel(ContinueAt), "right");
-            theme.Button(page, "Bölümler", 32, 639, 231, 55, RoadTheme.Raised, RoadTheme.Cream, () => ShowLevels(0));
-            theme.Button(page, "Küpler", 277, 639, 231, 55, RoadTheme.Raised, RoadTheme.Cream, ShowCubes);
+            theme.Button(page, T("Levels", "Уровни"), 32, 639, 231, 55, RoadTheme.Raised, RoadTheme.Cream, () => ShowLevels(0));
+            theme.Button(page, T("Cubes", "Кубы"), 277, 639, 231, 55, RoadTheme.Raised, RoadTheme.Cream, ShowCubes);
             Image stats = theme.Box(page, "İlerleme", 32, 715, 476, 94, RoadTheme.Panel, 20);
-            HomeStat(stats.rectTransform, 17, "dot", Format(progress.TotalScore), "Toplam puan", RoadTheme.Cream);
-            HomeStat(stats.rectTransform, 174, "star", Format(progress.TotalStars), "Yıldız", RoadTheme.Amber);
-            HomeStat(stats.rectTransform, 323, "diamond", Format(progress.TotalShards), "Kristal", RoadTheme.Mint);
-            UpdateSoundButton(page, 295, 833, 213);
-            theme.Button(page, "Nasıl Oynanır?", 32, 833, 231, 48, RoadTheme.Panel, RoadTheme.Muted, ShowTutorial);
+            HomeStat(stats.rectTransform, 17, "dot", Format(progress.TotalScore), T("Total score", "Всего очков"), RoadTheme.Cream);
+            HomeStat(stats.rectTransform, 174, "star", Format(progress.TotalStars), T("Stars", "Звёзды"), RoadTheme.Amber);
+            HomeStat(stats.rectTransform, 323, "diamond", Format(progress.TotalShards), T("Crystals", "Кристаллы"), RoadTheme.Mint);
+            theme.Button(page, T("Settings", "Настройки"), 277, 833, 231, 48, RoadTheme.Panel, RoadTheme.Muted, ShowSettings);
+            theme.Button(page, T("How to Play", "Как играть"), 32, 833, 231, 48, RoadTheme.Panel, RoadTheme.Muted, ShowTutorial);
+        }
+
+        private void ShowSettings()
+        {
+            string title = T("Settings", "Настройки");
+            RectTransform card = OpenModal(title, 418);
+            Label(card, title, 27, 24, 350, 53, 42, RoadTheme.Cream, theme.Display);
+            Label(card, T("Interface language", "Язык интерфейса"), 28, 99, 411, 35, 22, RoadTheme.Muted, theme.Bold);
+            LanguageOption(RoadLanguage.English, "English", 147);
+            LanguageOption(RoadLanguage.Russian, "Русский", 214);
+            UpdateSoundButton(card, 28, 330, 412);
+
+            void LanguageOption(RoadLanguage option, string name, float y)
+            {
+                bool selected = option == language;
+                Button button = theme.Button(card, name, 28, y, 412, 56,
+                    selected ? RoadTheme.Mint : RoadTheme.Raised, selected ? RoadTheme.Ink : RoadTheme.Cream, () =>
+                    {
+                        if (option == language)
+                            return;
+
+                        RoadLocale.Save(option);
+                        UseLanguage(option);
+                        ShowHome();
+                        ShowSettings();
+                    });
+                if (selected)
+                    theme.Icon((RectTransform)button.transform, "diamond", 378, 18, 20, RoadTheme.Ink);
+            }
         }
 
         private void DecorativeTile(RectTransform parent, float x, float y, float size, float angle, Color color, float opacity)
@@ -70,16 +105,21 @@ namespace RenkYolu.Mobile
 
         private void ShowTutorial()
         {
-            RectTransform card = OpenModal("Nasıl Oynanır", 585);
-            Label(card, "Nasıl oynanır?", 27, 23, 370, 48, 39, RoadTheme.Cream, theme.Display);
-            TutorialRow(card, 90, "01", "Ezberle", "Renkleri ve puan işlemlerini incele.", RoadTheme.Amber);
-            TutorialRow(card, 181, "02", "Yolunu çiz", "Sol alttan başla. Parmağını yatay veya dikey komşu karelere sürükle.", RoadTheme.Mint);
-            TutorialRow(card, 288, "03", "Renginde bitir", "Küp aynı renkli karede durursa bölümü geçersin. Yol üzerindeki aynı renkler puanı ikiye katlar.",
+            string title = T("How to Play", "Как играть");
+            RectTransform card = OpenModal(title, 585);
+            Label(card, title, 27, 23, 350, 48, 39, RoadTheme.Cream, theme.Display);
+            TutorialRow(card, 90, "01", T("Memorize", "Запомни"), T("Study the colors and tile values.", "Запомни цвета и значения клеток."), RoadTheme.Amber);
+            TutorialRow(card, 181, "02", T("Draw a route", "Нарисуй маршрут"),
+                T("Start at the bottom left. Drag across neighboring tiles, horizontally or vertically.",
+                    "Начни снизу слева. Веди пальцем по соседним клеткам по горизонтали или вертикали."), RoadTheme.Mint);
+            TutorialRow(card, 288, "03", T("Match your color", "Финишируй на своём цвете"),
+                T("Finish on your starting color to win. Each tile of that color doubles your score.",
+                    "Закончи на клетке цвета старта. Каждая клетка этого цвета удваивает счёт."),
                 RoadTheme.Pink);
             theme.Icon(card, "diamond", 32, 436, 28, RoadTheme.Mint);
-            Label(card, "İşaretli karelerden kristal topla ve yeni küpler aç.",
+            Label(card, T("Collect crystals from marked tiles to unlock cubes.", "Собирай кристаллы на отмеченных клетках, чтобы открыть новые кубы."),
                 76, 416, 367, 62, 20, RoadTheme.Muted, theme.Body);
-            theme.Button(card, phase == Phase.Memorizing ? "Hazırım" : "Anladım", 27, 496, 414, 60,
+            theme.Button(card, phase == Phase.Memorizing ? T("Ready", "Начать") : T("Got It", "Понятно"), 27, 496, 414, 60,
                 RoadTheme.Mint, RoadTheme.Ink, CloseModal);
         }
 
@@ -96,13 +136,14 @@ namespace RenkYolu.Mobile
             if (phase == Phase.Home || phase == Phase.Result)
                 return;
 
-            RectTransform card = OpenModal("Duraklatıldı", 437);
-            Label(card, "Duraklatıldı", 28, 25, 410, 51, 41, RoadTheme.Cream, theme.Display);
-            Label(card, "Bölüm " + Format(Difficulty.Level), 30, 79, 410, 32, 20, RoadTheme.Muted, theme.Body);
-            theme.Button(card, "Devam Et", 28, 126, 412, 62, RoadTheme.Mint, RoadTheme.Ink, CloseModal);
-            theme.Button(card, "Bölümü Baştan Al", 28, 202, 412, 54, RoadTheme.Raised,
+            string title = T("Paused", "Пауза");
+            RectTransform card = OpenModal(title, 437);
+            Label(card, title, 28, 25, 350, 51, 41, RoadTheme.Cream, theme.Display);
+            Label(card, LevelTitle(Difficulty.Level), 30, 79, 410, 32, 20, RoadTheme.Muted, theme.Body);
+            theme.Button(card, T("Resume", "Продолжить"), 28, 126, 412, 62, RoadTheme.Mint, RoadTheme.Ink, CloseModal);
+            theme.Button(card, T("Restart Level", "Начать заново"), 28, 202, 412, 54, RoadTheme.Raised,
                 RoadTheme.Cream, () => StartLevel(Difficulty.Level));
-            theme.Button(card, "Ana Menü", 28, 268, 412, 54, RoadTheme.Raised, RoadTheme.Cream, ShowHome);
+            theme.Button(card, T("Main Menu", "Главное меню"), 28, 268, 412, 54, RoadTheme.Raised, RoadTheme.Cream, ShowHome);
             UpdateSoundButton(card, 28, 344, 412);
         }
 
@@ -120,7 +161,7 @@ namespace RenkYolu.Mobile
             });
         }
 
-        private string SoundLabel() => progress.muted ? "Ses Kapalı" : "Ses Açık";
+        private string SoundLabel() => progress.muted ? T("Sound Off", "Звук выключен") : T("Sound On", "Звук включён");
 
         private void ShowLevels(int batch)
         {
@@ -129,8 +170,9 @@ namespace RenkYolu.Mobile
                 batch = lastBatch;
             int visibleLastBatch = Mathf.Min(lastBatch + 1, (int.MaxValue - 1) / 12);
             batch = Mathf.Clamp(batch, 0, visibleLastBatch);
-            RectTransform card = OpenModal("Bölümler", 682);
-            Label(card, "Bölümler", 25, 27, 360, 53, 43, RoadTheme.Cream, theme.Display);
+            string title = T("Levels", "Уровни");
+            RectTransform card = OpenModal(title, 682);
+            Label(card, title, 25, 27, 360, 53, 43, RoadTheme.Cream, theme.Display);
             long first = (long)batch * 12 + 1;
             Label(card, Format(first) + "–" + Format(first + 11), 28, 84, 380, 28, 19, RoadTheme.Muted, theme.Body);
 
@@ -152,13 +194,13 @@ namespace RenkYolu.Mobile
                 if (record != null)
                     DrawStars(box, 30, 53, 23, record.stars);
                 else
-                    Label(box, active ? "Sıradaki" : "Kilitli", 0, 49, 131, 30, 15,
+                    Label(box, active ? T("Up next", "Следующий") : T("Locked", "Закрыто"), 0, 49, 131, 30, 15,
                         current ? RoadTheme.Ink : RoadTheme.Muted, theme.Body, TextAnchor.MiddleCenter);
             }
 
-            Button previous = theme.Button(card, "Önceki", 25, 581, 196, 59, RoadTheme.Raised,
+            Button previous = theme.Button(card, T("Previous", "Назад"), 25, 581, 196, 59, RoadTheme.Raised,
                 RoadTheme.Cream, () => ShowLevels(batch - 1), "left");
-            Button next = theme.Button(card, "Sonraki", 247, 581, 196, 59, RoadTheme.Raised,
+            Button next = theme.Button(card, T("Next", "Далее"), 247, 581, 196, 59, RoadTheme.Raised,
                 RoadTheme.Cream, () => ShowLevels(batch + 1), "right");
             previous.interactable = batch > 0;
             next.interactable = batch < visibleLastBatch;
@@ -166,10 +208,11 @@ namespace RenkYolu.Mobile
 
         private void ShowCubes()
         {
-            RectTransform card = OpenModal("Küpler", 673);
-            Label(card, "Küpler", 25, 27, 360, 52, 43, RoadTheme.Cream, theme.Display);
+            string title = T("Cubes", "Кубы");
+            RectTransform card = OpenModal(title, 673);
+            Label(card, title, 25, 27, 360, 52, 43, RoadTheme.Cream, theme.Display);
             theme.Icon(card, "diamond", 28, 91, 22, RoadTheme.Mint);
-            Label(card, Format(progress.TotalShards) + " kristal", 59, 85, 330, 32, 22, RoadTheme.Mint, theme.Bold);
+            Label(card, CrystalCount(progress.TotalShards), 59, 85, 330, 32, 22, RoadTheme.Mint, theme.Bold);
             for (int index = 0; index < RoadProgress.CubeCount; index++)
             {
                 int style = index;
@@ -188,13 +231,14 @@ namespace RenkYolu.Mobile
                 picker.interactable = owned;
                 RectTransform box = (RectTransform)picker.transform;
                 new RoadCube(theme, box, 70, style).Draw(new Vector2(102, 76), 0, 0, 0, CubeColors[style]);
-                Label(box, CubeNames[style], 0, 115, 204, 30, 24, RoadTheme.Cream, theme.Display, TextAnchor.MiddleCenter);
-                string note = selected ? "Seçili" : owned ? "Seç" : Format(style * RoadProgress.ShardsPerCube) + " kristal";
+                Label(box, CubeName(style), 0, 115, 204, 30, 24, RoadTheme.Cream, theme.Display, TextAnchor.MiddleCenter);
+                string note = selected ? T("Selected", "Выбран") : owned ? T("Select", "Выбрать") :
+                    CrystalCount(style * RoadProgress.ShardsPerCube);
                 Label(box, note, 0, 150, 204, 29, 18, selected ? RoadTheme.Mint : RoadTheme.Muted,
                     theme.Body, TextAnchor.MiddleCenter);
             }
 
-            Label(card, "Kristalleri toplamak için bölümü başarıyla bitir.",
+            Label(card, T("Finish a level to keep the crystals you collect.", "Заверши уровень, чтобы сохранить собранные кристаллы."),
                 24, 571, 420, 55, 18, RoadTheme.Muted, theme.Body, TextAnchor.MiddleCenter);
         }
 
@@ -221,7 +265,7 @@ namespace RenkYolu.Mobile
             RectTransform card = OpenModal("Bölüm sonucu", 600, false);
             Color accent = won ? RoadTheme.Mint : RoadTheme.Pink;
             theme.Icon(card, won ? "spark" : "undo", 204, 32, 60, accent);
-            Label(card, won ? "Bölüm tamam!" : "Tekrar dene", 22, 105, 424, 48, 43,
+            Label(card, won ? T("Level complete!", "Уровень пройден!") : T("Try again", "Попробуй снова"), 22, 105, 424, 48, 41,
                 RoadTheme.Cream, theme.Display, TextAnchor.MiddleCenter);
             if (won)
                 DrawStars(card, 131, 168, 64, stars);
@@ -230,25 +274,26 @@ namespace RenkYolu.Mobile
 
             Image dark = theme.Box(card, "Sonuç puanları", 28, 246, 412, 119, RoadTheme.Background, 18);
             RectTransform info = dark.rectTransform;
-            ResultStat(info, "PUAN", Format(score), 12, 182, RoadTheme.Cream);
+            ResultStat(info, T("SCORE", "ОЧКИ"), Format(score), 12, 182, RoadTheme.Cream);
             theme.Box(info, "Ayraç", 206, 22, 1, 75, RoadTheme.Rim, 1);
-            ResultStat(info, "MAKSİMUM", Format(level.Solution.Maximum), 218, 182, RoadTheme.Amber);
+            ResultStat(info, T("MAXIMUM", "МАКСИМУМ"), Format(level.Solution.Maximum), 218, 182, RoadTheme.Amber);
 
-            string note = won && stars < 3 ? "3 yıldız için " + Format(level.ThreeStarScore) + " puan" :
-                won && earned > 0 ? "+" + earned + " yeni kristal" :
-                won ? "Toplam puan  " + Format(progress.TotalScore) :
-                failure == RoadFailure.InvalidPath ? "Süre dolmadan en az iki kare çiz." : "Bir sonraki denemede başka bir yol çiz.";
+            string note = won && stars < 3 ? string.Format(T("{0} points for 3 stars", "До трёх звёзд нужно набрать {0}"), Format(level.ThreeStarScore)) :
+                won && earned > 0 ? "+" + CrystalCount(earned) :
+                won ? T("Total score  ", "Всего очков  ") + Format(progress.TotalScore) :
+                failure == RoadFailure.InvalidPath ? T("Connect at least two tiles before time runs out.", "Соедини хотя бы две клетки до конца отсчёта.") :
+                T("Try a different route next time.", "Попробуй проложить другой маршрут.");
             Label(card, note, 26, 383, 416, 41, 19, won ? RoadTheme.Mint : RoadTheme.Muted,
                 theme.Bold, TextAnchor.MiddleCenter);
 
             bool canAdvance = won && number < int.MaxValue;
-            theme.Button(card, canAdvance ? "Sonraki Bölüm" : "Yeniden Dene", 29, 439, 410, 65,
+            theme.Button(card, canAdvance ? T("Next Level", "Следующий уровень") : T("Try Again", "Попробовать снова"), 29, 439, 410, 65,
                 RoadTheme.Mint, RoadTheme.Ink,
                 () => StartLevel(canAdvance ? number + 1 : number), canAdvance ? "right" : "undo");
             if (canAdvance)
-                theme.Button(card, "Tekrar Oyna", 29, 520, 198, 50, RoadTheme.Raised,
+                theme.Button(card, T("Replay", "Переиграть"), 29, 520, 198, 50, RoadTheme.Raised,
                     RoadTheme.Cream, () => StartLevel(number));
-            theme.Button(card, "Ana Menü", canAdvance ? 241 : 29, 520, canAdvance ? 198 : 410, 50,
+            theme.Button(card, T("Main Menu", "Главное меню"), canAdvance ? 241 : 29, 520, canAdvance ? 198 : 410, 50,
                 RoadTheme.Raised, RoadTheme.Cream, ShowHome);
         }
 
@@ -265,15 +310,31 @@ namespace RenkYolu.Mobile
                 theme.Icon(parent, "star", x + i * (size + 5), y, size, i < filled ? RoadTheme.Amber : RoadTheme.Rim);
         }
 
-        private static string FailureText(RoadFailure failure) => failure switch
+        private string CrystalCount(int count)
         {
-            RoadFailure.InvalidPath => "Süre doldu.",
-            RoadFailure.WrongColor => "Küp başlangıç renginde bitirmedi.",
-            RoadFailure.ObstacleFinish => "Küp bir engelin üzerinde durdu.",
-            RoadFailure.LauncherOffBoard => "Fırlatıcı küpü tahta dışına attı.",
-            RoadFailure.LauncherBlocked => "Fırlatıcının önü kapalıydı.",
-            RoadFailure.LauncherMissedPath => "Fırlatıcının iniş karesi rotanda yoktu.",
-            RoadFailure.LauncherRevisit => "Fırlatıcı seni geçtiğin bir kareye attı.",
+            string noun = "crystals";
+            if (language == RoadLanguage.Russian)
+            {
+                int ones = count % 10;
+                int lastTwo = count % 100;
+                noun = lastTwo is >= 11 and <= 14 ? "кристаллов" :
+                    ones == 1 ? "кристалл" : ones is >= 2 and <= 4 ? "кристалла" : "кристаллов";
+            }
+            else if (count == 1)
+                noun = "crystal";
+
+            return Format(count) + " " + noun;
+        }
+
+        private string FailureText(RoadFailure failure) => failure switch
+        {
+            RoadFailure.InvalidPath => T("Time's up.", "Время вышло."),
+            RoadFailure.WrongColor => T("The cube finished on the wrong color.", "Куб финишировал на клетке другого цвета."),
+            RoadFailure.ObstacleFinish => T("The cube stopped on an obstacle.", "Куб остановился на препятствии."),
+            RoadFailure.LauncherOffBoard => T("The launcher sent the cube off the board.", "Стрелка перебросила куб за пределы поля."),
+            RoadFailure.LauncherBlocked => T("The launcher's landing tile was blocked.", "Клетка приземления была заблокирована."),
+            RoadFailure.LauncherMissedPath => T("The launcher's landing tile was outside your route.", "Клетка приземления не входила в маршрут."),
+            RoadFailure.LauncherRevisit => T("The launcher sent the cube to a tile it had already visited.", "Стрелка вернула куб на уже пройденную клетку."),
             _ => ""
         };
 

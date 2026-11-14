@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8f323c8ea610507469c39145defa3850
+guid: 112f7ab0abbce8349987e1a00cf2c1e9
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - DM Sans 9pt
+  - Inter
   fallbackFontReferences: []
   customCharacters:
   fontRenderingMode: 0

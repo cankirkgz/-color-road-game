@@ -36,7 +36,7 @@ namespace RenkYolu.Mobile
         private readonly float extent;
 
         internal RoadBoardView(RoadTheme theme, RoadBoard board, RectTransform parent, float x, float y,
-            float extent, int skin, RoadGesture.OnGesture callback)
+            float extent, int skin, string startLabel, RoadGesture.OnGesture callback)
         {
             this.theme = theme;
             this.board = board;
@@ -53,7 +53,7 @@ namespace RenkYolu.Mobile
             tileSize = pitch - (board.Size < 6 ? 8 : 6);
             cells = new CellView[board.Count];
             for (int cell = 0; cell < cells.Length; cell++)
-                cells[cell] = AddCell(cell);
+                cells[cell] = AddCell(cell, startLabel);
 
             pathLayer = RoadTheme.Place(root, "Çizilen rota", 0, 0, extent, extent);
             cube = new RoadCube(theme, root, tileSize * .70f, skin);
@@ -170,7 +170,7 @@ namespace RenkYolu.Mobile
             };
         }
 
-        private CellView AddCell(int cell)
+        private CellView AddCell(int cell, string startLabel)
         {
             Vector2 center = Center(cell);
             float x = center.x - tileSize / 2;
@@ -196,7 +196,7 @@ namespace RenkYolu.Mobile
                 mark, RoadTheme.Cream);
             float shard = tileSize * .25f;
             view.Shard = theme.Icon(face, "diamond", tileSize - shard - 6, 5, shard, RoadTheme.Cream);
-            view.Label = theme.Text(face, cell == RoadBoard.Start ? "BAŞLA" : OperationText(view.Tile.Operation),
+            view.Label = theme.Text(face, cell == RoadBoard.Start ? startLabel : OperationText(view.Tile.Operation),
                 0, cell == RoadBoard.Start ? tileSize * .76f : 0, tileSize - 2, cell == RoadBoard.Start ? tileSize * .18f : tileSize - 2,
                 Mathf.RoundToInt(tileSize * (cell == RoadBoard.Start ? .13f : .34f)),
                 RoadTheme.Ink, theme.Display, TextAnchor.MiddleCenter);

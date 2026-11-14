@@ -22,10 +22,11 @@ namespace RenkYolu.Mobile
         private const float Height = 900;
         private const float BoardExtent = 476;
         private const int NoPointer = int.MinValue;
-        private static readonly CultureInfo Turkish = CultureInfo.GetCultureInfo("tr-TR");
 
         private readonly List<int> route = new List<int>();
         private RoadTheme theme;
+        private RoadLanguage language;
+        private CultureInfo numberCulture;
         private RoadAudio sounds;
         private RoadProgress progress;
         private RectTransform safeRoot;
@@ -68,6 +69,7 @@ namespace RenkYolu.Mobile
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Application.runInBackground = false;
+            UseLanguage(RoadLocale.Load());
             theme = new RoadTheme();
             progress = LoadProgress();
             sounds = new RoadAudio(gameObject) { Muted = progress.muted };
@@ -203,19 +205,19 @@ namespace RenkYolu.Mobile
 
         private void CreateStage()
         {
-            Label(page, "RENK YOLU", 32, 28, 140, 22, 18, RoadTheme.Muted, theme.Bold);
-            Label(page, "Bölüm " + Format(Difficulty.Level), 32, 50, 280, 49, 36, RoadTheme.Cream, theme.Display);
+            Label(page, Application.productName.ToUpperInvariant(), 32, 28, 220, 22, 18, RoadTheme.Muted, theme.Bold);
+            Label(page, LevelTitle(Difficulty.Level), 32, 50, 280, 49, 36, RoadTheme.Cream, theme.Display);
             Image size = theme.Box(page, "Tahta boyutu", 342, 52, 86, 44, RoadTheme.Panel, 14);
             Label(size.rectTransform, Board.Size + " × " + Board.Size, 0, 0, 86, 44, 21,
                 RoadTheme.Muted, theme.Bold, TextAnchor.MiddleCenter);
             theme.Button(page, "", 452, 48, 56, 50, RoadTheme.Panel, RoadTheme.Cream, ShowPause, "pause");
 
             Image dark = theme.Box(page, "Puan kartı", 32, 115, 476, 69, RoadTheme.Panel, 20);
-            Label(dark.rectTransform, "PUAN", 17, 11, 140, 17, 14, RoadTheme.Muted, theme.Bold);
+            Label(dark.rectTransform, T("SCORE", "ОЧКИ"), 17, 11, 140, 17, 14, RoadTheme.Muted, theme.Bold);
             scoreValue = Label(dark.rectTransform, "0", 17, 27, 147, 32, 27, RoadTheme.Cream, theme.Display);
             FitNumber(scoreValue, 16);
             theme.Box(dark.rectTransform, "Ayraç", 169, 16, 1, 36, RoadTheme.Rim, 1);
-            Label(dark.rectTransform, "MAKSİMUM", 185, 11, 170, 17, 14, RoadTheme.Muted, theme.Bold);
+            Label(dark.rectTransform, T("MAXIMUM", "МАКСИМУМ"), 185, 11, 170, 17, 14, RoadTheme.Muted, theme.Bold);
             Text maximum = Label(dark.rectTransform, Format(level.Solution.Maximum), 185, 27, 154, 32, 27,
                 RoadTheme.Cream, theme.Display);
             FitNumber(maximum, 16);
@@ -232,12 +234,13 @@ namespace RenkYolu.Mobile
             timerFill.type = Image.Type.Filled;
             timerFill.fillMethod = Image.FillMethod.Horizontal;
 
-            boardView = new RoadBoardView(theme, Board, page, 32, 299, BoardExtent, progress.cube, HandleGesture);
+            boardView = new RoadBoardView(theme, Board, page, 32, 299, BoardExtent, progress.cube, T("START", "СТАРТ"), HandleGesture);
             drawNote = Label(page, "", 32, 779, 476, 34, 18, RoadTheme.Muted, theme.Body, TextAnchor.MiddleCenter);
             undoButton = theme.Button(page, "", 32, 820, 74, 60, RoadTheme.Raised, RoadTheme.Cream, Undo, "undo");
-            confirmButton = theme.Button(page, "Yolu Onayla", 120, 820, 388, 60, RoadTheme.Mint, RoadTheme.Ink, ConfirmRoute, "right");
-            SetPhase(Phase.Memorizing, Difficulty.MemorySeconds, "Haritayı ezberle",
-                "Başlangıç rengini ve puanlı kareleri aklında tut.", "Renkler ve işlemler birazdan gizlenecek.", RoadTheme.Amber);
+            confirmButton = theme.Button(page, T("Confirm Route", "Подтвердить маршрут"), 120, 820, 388, 60, RoadTheme.Mint, RoadTheme.Ink, ConfirmRoute, "right");
+            SetPhase(Phase.Memorizing, Difficulty.MemorySeconds, T("Memorize the board", "Запомни поле"),
+                T("Remember your starting color and the tile values.", "Запомни цвет старта и значения клеток."),
+                T("Colors and values will disappear soon.", "Скоро цвета и значения исчезнут."), RoadTheme.Amber);
         }
 
         private void StartDrawing()
@@ -245,14 +248,14 @@ namespace RenkYolu.Mobile
             boardView.Hide();
             string note = Difficulty.Level switch
             {
-                1 => "Başla’dan aynı renkli bir kareye kadar sürükle.",
-                6 => "Çizgili duvarların içinden geçemezsin.",
-                8 => "Oklar küpü gösterdikleri komşu kareye atar.",
-                12 => "Dikenler 50 puan düşürür ve komboyu bozar.",
-                _ => "Sol alttan başla ve başlangıç renginde bitir."
+                1 => T("Drag from Start to a tile of the same color.", "Проведи путь от старта до клетки того же цвета."),
+                6 => T("Striped walls block your route.", "Полосатые стены перекрывают путь."),
+                8 => T("Arrows launch the cube one tile in their direction.", "Стрелка перебрасывает куб на соседнюю клетку."),
+                12 => T("Spikes cost 50 points and break your combo.", "Шипы отнимают 50 очков и сбрасывают комбо."),
+                _ => T("Start at the bottom left and finish on your color.", "Начни снизу слева и финишируй на своём цвете.")
             };
-            SetPhase(Phase.Drawing, Difficulty.DrawingSeconds, "Rotayı çiz",
-                "Yatay ve dikey kareleri birleştir.", note, RoadTheme.Mint);
+            SetPhase(Phase.Drawing, Difficulty.DrawingSeconds, T("Draw your route", "Нарисуй маршрут"),
+                T("Connect tiles horizontally or vertically.", "Соединяй клетки по горизонтали или вертикали."), note, RoadTheme.Mint);
         }
 
         private void SetPhase(Phase next, float time, string title, string note, string tip, Color accent)
@@ -284,7 +287,7 @@ namespace RenkYolu.Mobile
             if (seconds != displaySecond)
             {
                 displaySecond = seconds;
-                countdown.text = seconds.ToString(Turkish);
+                countdown.text = Format(seconds);
                 if (phase == Phase.Drawing)
                     countdown.color = seconds <= 5 ? (Color)RoadTheme.Pink : RoadTheme.Mint;
             }
@@ -315,7 +318,7 @@ namespace RenkYolu.Mobile
                     return;
                 if (!Board[cell].Walkable)
                 {
-                    SpawnFeedback(cell, "DUVAR", RoadTheme.Pink, false);
+                    SpawnFeedback(cell, T("WALL", "СТЕНА"), RoadTheme.Pink, false);
                     return;
                 }
                 if (route.Count == 0 && cell != RoadBoard.Start)
@@ -394,8 +397,9 @@ namespace RenkYolu.Mobile
                 return;
 
             RoadRun result = RoadRules.Play(Board, route);
-            SetPhase(Phase.Walking, 0, "Küp yolda",
-                "Kareler açılırken puanın değişiyor.", "Puanlar rotadaki sırayla hesaplanıyor.", RoadTheme.Mint);
+            SetPhase(Phase.Walking, 0, T("Cube on the move", "Куб в пути"),
+                T("Your score changes as tiles are revealed.", "Очки меняются по мере открытия клеток."),
+                T("Tile values apply in route order.", "Значения клеток применяются по порядку."), RoadTheme.Mint);
             walking = StartCoroutine(AnimateWalk(result));
         }
 
@@ -418,7 +422,7 @@ namespace RenkYolu.Mobile
                 {
                     scoreValue.text = Format(step.Score);
                     lastScore = step.Score;
-                    SpawnFeedback(step.Cell, "+50 KESTİRME", RoadTheme.Mint, true);
+                    SpawnFeedback(step.Cell, T("+50 SHORTCUT", "+50 ЗА ПРЫЖОК"), RoadTheme.Mint, true);
                     continue;
                 }
 
@@ -439,18 +443,18 @@ namespace RenkYolu.Mobile
                 boardView.Reveal(step.Cell, step.PickedShard);
                 if (step.PickedShard)
                 {
-                    shardValue.text = (++shards).ToString(Turkish);
+                    shardValue.text = Format(++shards);
                     sounds.Shard();
                 }
 
-                string message = step.ColorBonus ? "RENK ×2" :
+                string message = step.ColorBonus ? T("COLOR ×2", "ЦВЕТ ×2") :
                     tile.Kind == TileSpecialType.Spike ? "−50" :
-                    step.Combo >= 2 && !skipped ? "KOMBO ×" + step.Combo :
+                    step.Combo >= 2 && !skipped ? T("COMBO ×", "КОМБО ×") + Format(step.Combo) :
                     step.Score != lastScore && step.Cell != RoadBoard.Start ? RoadBoardView.OperationText(tile.Operation) : "";
                 if (message.Length > 0 || step.PickedShard)
                 {
                     if (step.PickedShard && message.Length == 0)
-                        message = "+1 KRİSTAL";
+                        message = T("+1 CRYSTAL", "+1 КРИСТАЛЛ");
                     SpawnFeedback(step.Cell, message,
                         tile.Kind == TileSpecialType.Spike ? RoadTheme.Pink : RoadTheme.Mint,
                         step.PickedShard || step.ColorBonus || tile.Kind == TileSpecialType.Spike);
@@ -592,7 +596,15 @@ namespace RenkYolu.Mobile
             int size, Color color, Font font, TextAnchor anchor = TextAnchor.MiddleLeft) =>
             theme.Text(parent, value, x, y, w, h, size, color, font, anchor);
 
-        private static string Format(long number) => number.ToString("#,0", Turkish);
+        private void UseLanguage(RoadLanguage selected)
+        {
+            language = selected;
+            numberCulture = CultureInfo.GetCultureInfo(T("en-US", "ru-RU"));
+        }
+
+        private string T(string english, string russian) => language == RoadLanguage.Russian ? russian : english;
+        private string Format(long number) => number.ToString("#,0", numberCulture);
+        private string LevelTitle(int number) => T("Level ", "Уровень ") + Format(number);
 
         private static void FitNumber(Text label, int smallest)
         {
